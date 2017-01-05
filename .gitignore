@@ -1,0 +1,14 @@
+### IOR autoconf cruft
+ior/Makefile.in
+ior/aclocal.m4
+ior/build/
+ior/config/config.guess
+ior/config/config.sub
+ior/config/depcomp
+ior/config/install-sh
+ior/config/missing
+ior/configure
+ior/contrib/Makefile.in
+ior/doc/Makefile.in
+ior/src/Makefile.in
+ior/src/config.h.in
