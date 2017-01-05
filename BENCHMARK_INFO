@@ -2,6 +2,9 @@ IOR
 ================================================================================
  * source cloned directly from: https://github.com/IOR-LANL/ior
  * last commit: 9593c46c5d98ad4b6f4226d1cd74c459d1d57b3d
+     * added a small manual bug fix for Mira by commenting out line 232 in ior.c
+         * getenv("USER") returns NULL, causing segfault
+         * this line is only used for HDFS backend
 
 HACC-IO
 ================================================================================

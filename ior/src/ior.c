@@ -229,7 +229,7 @@ void init_IOR_Param_t(IOR_param_t * p)
         p->setAlignment = 1;
         p->lustre_start_ost = -1;
 
-        strncpy(p->hdfs_user, getenv("USER"), MAX_STR);
+        //strncpy(p->hdfs_user, getenv("USER"), MAX_STR);
         p->hdfs_name_node      = "default";
         p->hdfs_name_node_port = 0; /* ??? */
         p->hdfs_fs = NULL;
