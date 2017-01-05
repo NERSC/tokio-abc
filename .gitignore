@@ -1,7 +1,10 @@
+### IOR build and artifacts
+ior/build
+ior/install
+
 ### IOR autoconf cruft
 ior/Makefile.in
 ior/aclocal.m4
-ior/build/
 ior/config/config.guess
 ior/config/config.sub
 ior/config/depcomp
