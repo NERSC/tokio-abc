@@ -1,6 +1,14 @@
-### IOR build and artifacts
-ior/build
+### Artifacts
 ior/install
+hacc-io/install
+h5part/install
+vpic-io/install
+bdcats-io/install
+
+### Build directories and contents
+ior/build
+h5part/build
+*.o
 
 ### IOR autoconf cruft
 ior/Makefile.in
@@ -15,10 +23,6 @@ ior/contrib/Makefile.in
 ior/doc/Makefile.in
 ior/src/Makefile.in
 ior/src/config.h.in
-
-### H5Part build and artifacts
-h5part/build
-h5part/install
 
 ### H5Part autoconf cruft
 h5part/Makefile.in
