@@ -33,7 +33,7 @@ fi
 if [ "$target" == "vpic-io" -o "$target" == "all" ]; then
     module load cray-hdf5-parallel ### assume HDF5 1.8 or higher
     cd "${basedir}/vpic-io"
-    sed -i 's@^H5PART_ROOT *=.*$@H5PART_ROOT='"${basedir}/h5part/install"'@' Makefile
+    sed -e 's@^H5PART_ROOT *=.*$@H5PART_ROOT='"${basedir}/h5part/install"'@' Makefile.in > Makefile
     make || exit 1
     mkdir -p install
     mv -v vpicio_uni vpicio_uni_dyn install/
@@ -43,7 +43,7 @@ fi
 if [ "$target" == "bdcats-io" -o "$target" == "all" ]; then
     module load cray-hdf5-parallel ### assume HDF5 1.8 or higher
     cd "${basedir}/bdcats-io"
-    sed -i 's@^H5PART_ROOT *=.*$@H5PART_ROOT='"${basedir}/h5part/install"'@' Makefile
+    sed -e 's@^H5PART_ROOT *=.*$@H5PART_ROOT='"${basedir}/h5part/install"'@' Makefile.in > Makefile
     make || exit 1
     mkdir -p install
     mv -v dbscan_read install/

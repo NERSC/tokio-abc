@@ -8,6 +8,8 @@ bdcats-io/install
 ### Build directories and contents
 ior/build
 h5part/build
+vpic-io/Makefile
+bdcats-io/Makefile
 *.o
 
 ### IOR autoconf cruft
