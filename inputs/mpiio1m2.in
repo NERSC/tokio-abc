@@ -1,23 +1,22 @@
 IOR START
 # common options
-    reorderTasks=1 # defeat buffer cache for read after write by reordering tasks
-    fsync=1 # call fsync for POSIX I/O before close
-    intraTestBarriers=1 # use barriers between open/read/write/close
-    repetitions=1
-    verbose=1
-    keepFile=1
-    filePerProc=0 # 0 for parallel I/O to single file
+    reorderTasks=1       # -C    reorderTasks -- changes task ordering to n+1 ordering for readback
+    fsync=1              # -e    fsync -- perform fsync upon POSIX write close
+    intraTestBarriers=1  # -g    intraTestBarriers -- use barriers between open, write/read, and close
+    repetitions=1        # -i N  repetitions -- number of repetitions of test
+    verbose=1            # -v    verbose -- output information (repeating flag increases level)
+### keepFile=1           # -k    keepFile -- don't remove the test file(s) on program exit
+    filePerProc=0        # -F    filePerProc -- file-per-process
 
 # MPIIO shared file tests
 # 1m2 test
-    filePerProc=0
-    api=MPIIO
-    testFile = singdir/IOR_MPIIO_1m2 # File name
-    hintsFileName=mpiiohints
-    collective=1 # enables data shipping optimization
-    # segmentCount=2048 # number of segments in file (#steps in file)
-    blockSize=1048576 # blocksize (for individual set of transfers)
-    transferSize=1048576 # I/O call size
+    api=MPIIO            # -a S  api --  API for I/O [POSIX|MPIIO|HDF5|NCMPI]
+### testFile = singdir/IOR_MPIIO_1m2 #  -o S  testFile -- full name for test
+    hintsFileName=mpiiohints #  -U S  hintsFileName -- full name for hints file
+    collective=1         # -c    collective -- collective I/O
+### segmentCount=2048    # -s N  segmentCount -- number of segments
+    blockSize=1048576    # -b N  blockSize -- contiguous bytes to write per task (e.g.: 8, 4k, 2m, 1g)
+    transferSize=1048576 # -t N  transferSize -- size of transfer in bytes (e.g.: 8, 4k, 2m, 1g)
 RUN
 
 IOR STOP
