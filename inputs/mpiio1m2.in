@@ -2,7 +2,7 @@ IOR START
 # common options
     reorderTasks=1       # -C    reorderTasks -- changes task ordering to n+1 ordering for readback
     fsync=1              # -e    fsync -- perform fsync upon POSIX write close
-    intraTestBarriers=1  # -g    intraTestBarriers -- use barriers between open, write/read, and close
+    intraTestBarriers=1  # -g    intraTestBarriers -- use barriers between open-write/read-close
     repetitions=1        # -i N  repetitions -- number of repetitions of test
     verbose=1            # -v    verbose -- output information (repeating flag increases level)
 ### keepFile=1           # -k    keepFile -- don't remove the test file(s) on program exit
@@ -15,8 +15,8 @@ IOR START
     hintsFileName=mpiiohints #  -U S  hintsFileName -- full name for hints file
     collective=1         # -c    collective -- collective I/O
 ### segmentCount=2048    # -s N  segmentCount -- number of segments
-    blockSize=1048576    # -b N  blockSize -- contiguous bytes to write per task (e.g.: 8, 4k, 2m, 1g)
-    transferSize=1048576 # -t N  transferSize -- size of transfer in bytes (e.g.: 8, 4k, 2m, 1g)
+    blockSize=1048576    # -b N  blockSize -- contiguous bytes to write per task
+    transferSize=1048576 # -t N  transferSize -- size of transfer in bytes
 RUN
 
 IOR STOP
