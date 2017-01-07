@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+#  This will be folded into a run-cron-benchmarks-$NERSC_HOST.sh someday.  But
+#  that day is not today.
+#
 #SBATCH -J tokio-abc-ior
 #SBATCH -N 144
 #SBATCH -p debug
