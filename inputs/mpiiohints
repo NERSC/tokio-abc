@@ -1,0 +1,2 @@
+IOR_HINT__MPI__romio_cb_read=enable
+IOR_HINT__MPI__romio_cb_write=enable
