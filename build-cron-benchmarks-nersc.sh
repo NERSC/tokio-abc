@@ -8,6 +8,10 @@ else
     target="$1"
 fi
 
+if [ "$NERSC_HOST" == "edison" ]; then
+    module load autoconf automake
+fi
+
 # build IOR
 if [ "$target" == "ior" -o "$target" == "all" ]; then
     cd $basedir/ior
