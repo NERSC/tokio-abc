@@ -13,7 +13,7 @@ soft add +mpiwrapper-xl.legacy
 if [ $? -eq 0 ];
 then
   # submit to cobale
-  jid=$(qsub -A radix-io -n 2048 -t 30 --mode script --env SCRATCH=/projects/radix-io/automated ./run-cron-benchmarks-mira.sh)
+  jid=$(qsub -A radix-io -n 2048 -t 30 --mode script --env SCRATCH=/projects/radix-io/automated --run_project ./run-cron-benchmarks-mira.sh)
   cqwait $jid
   # check error code
   exit_code=$(sed -n 's/.* exit code of \([0-9]\); initiating job cleanup and removal/\1/p' ${jid}.cobaltlog)
