@@ -18,5 +18,5 @@ do
     srun -n 2304 "$hacc_write_exe" 20971520 "${hacc_outdir}/hacc.dat"
     sleep 15
     srun -n 2304 "$hacc_read_exe" 20971520 "${hacc_outdir}/hacc.dat"
-    rm "${hacc_outdir}/hacc.dat*"
+    rm ${hacc_outdir}/hacc.dat*
 done
