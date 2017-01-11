@@ -15,7 +15,7 @@ JENKINS_WD=$PWD
 if [ $? -eq 0 ];
 then
   # submit to cobale
-  jid=$(qsub --cwd /projects/radix-io/automated/runs -A radix-io -n 2048 -t 30 --mode script --env SCRATCH=/projects/radix-io/automated --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
+  jid=$(qsub --debug -A radix-io --cwd /projects/radix-io/automated/runs -n 2048 -t 30 --mode script --env SCRATCH=/projects/radix-io/automated --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
   rc=$?
   echo "Running as job: $jid"
   if [ $? -eq 0 ]; then
