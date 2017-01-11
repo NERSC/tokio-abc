@@ -7,13 +7,15 @@ source /etc/profile.d/00softenv.sh
 # set dependencies
 soft add +mpiwrapper-xl.legacy
 
+JENKINS_WD=$PWD
+
 # configure and build
 ./build-cron-benchmarks-mira.sh
 
 if [ $? -eq 0 ];
 then
   # submit to cobale
-  jid=$(qsub --cwd /projects/radix-io/automated/runs -A radix-io -n 2048 -t 30 --mode script --env SCRATCH=/projects/radix-io/automated --run_project ./run-cron-benchmarks-mira.sh)
+  jid=$(qsub --cwd /projects/radix-io/automated/runs -A radix-io -n 2048 -t 30 --mode script --env SCRATCH=/projects/radix-io/automated --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
   echo "Running as job: $jid"
   cqwait $jid
   # check error code
