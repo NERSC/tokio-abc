@@ -1,0 +1,193 @@
+#!/bin/bash
+# 2304 procs = 96 nodes on Edison, 72 on Cori/Haswell, 36 on Cori/KNL(@64c)
+# 1536 procs = 64 nodes on Edison, 48 on Cori/Haswell, 24 on Cori/KNL(@64c)
+#SBATCH -J tokio-abc
+#SBATCH -N 96
+#SBATCH -p regular
+#SBATCH -t 04:00:00
+
+### if not running in slurm, just do a dry run
+if [ -z "$SLURM_JOBID" ]; then
+    srun_exe="echo srun"
+    SLURM_JOBID="0000000"
+    SLURM_SUBMIT_DIR=$PWD
+else
+    srun_exe="srun"
+fi
+
+ior_exe="${SLURM_SUBMIT_DIR}/../ior/install/bin/ior"
+hacc_exe_path="${SLURM_SUBMIT_DIR}/../hacc-io/install"
+vpic_exe_path="${SLURM_SUBMIT_DIR}/../vpic-io/install"
+
+TOKIO_LOGPATH="$SLURM_SUBMIT_DIR"
+export DARSHAN_LOGPATH="$TOKIO_LOGPATH"
+
+### Set up a directory with wide striping
+module load lustre-cray_ari_s
+for out_dir in "/scratch1/scratchdirs/$USER/striped" "/scratch2/scratchdirs/$USER/striped" "/scratch3/scratchdirs/$USER/striped"
+do
+    mkdir -p $out_dir
+    lfs setstripe -c -1 $out_dir
+done
+
+read -r -d '' IOR_PARAM_SETS <<EOF
+# fs_name  ior_api output_file                                       nnode nproc
+# -------- ------- ------------------------------------------------- ----- -----
+  scratch1 mpiio   /scratch1/scratchdirs/$USER/striped/ior-mpiio.out 96    1536
+  scratch2 mpiio   /scratch2/scratchdirs/$USER/striped/ior-mpiio.out 96    1536
+  scratch3 mpiio   /scratch3/scratchdirs/$USER/striped/ior-mpiio.out 96    1536
+  scratch1 posix   /scratch1/scratchdirs/$USER/ior-posix.out         96    1536
+  scratch2 posix   /scratch2/scratchdirs/$USER/ior-posix.out         96    1536
+  scratch3 posix   /scratch3/scratchdirs/$USER/ior-posix.out         96    1536
+EOF
+
+read -r -d '' HACC_PARAM_SETS <<EOF
+# fs_name  hacc_exe      output_file                                  nnod nproc
+# -------- ------------  -------------------------------------------- ---- -----
+  scratch1 hacc_io_read  /scratch1/scratchdirs/$USER/haccio-read.out  96   1536
+  scratch2 hacc_io_read  /scratch2/scratchdirs/$USER/haccio-read.out  96   1536
+  scratch3 hacc_io_read  /scratch3/scratchdirs/$USER/haccio-read.out  96   1536
+  scratch1 hacc_io_write /scratch1/scratchdirs/$USER/haccio-write.out 96   1536
+  scratch2 hacc_io_write /scratch2/scratchdirs/$USER/haccio-write.out 96   1536
+  scratch3 hacc_io_write /scratch3/scratchdirs/$USER/haccio-write.out 96   1536
+EOF
+
+read -r -d '' VPIC_PARAM_SETS <<EOF
+# fs_name  vpic_exe       output_file                                     nnod nproc
+# -------- -------------- ----------------------------------------------- ---- -----
+  scratch1 vpicio_uni_dyn /scratch1/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch2 vpicio_uni_dyn /scratch2/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch3 vpicio_uni_dyn /scratch3/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch1 dbscan_read    /scratch1/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch2 dbscan_read    /scratch2/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch3 dbscan_read    /scratch3/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+EOF
+
+function run_ior() {
+    FS_NAME="$1"
+    IOR_API="$2"
+    OUT_FILE="$3"
+    NNODES="$4"
+    NPROCS="$5"
+
+    echo "[$(date)] Submitting IOR: ${FS_NAME}-${IOR_API}"
+    $srun_exe -n ${NPROCS} \
+         -N ${NNODES} \
+         "$ior_exe" -s 4096 \
+                    -H \
+                    -o "${OUT_FILE}" \
+                    -f "${IOR_API}1m2.in" > "${TOKIO_LOGPATH}/ior-${FS_NAME}-${IOR_API}.${SLURM_JOBID}.out"
+    echo "[$(date)] Completed IOR: ${FS_NAME}-${IOR_API}"
+}
+
+function clean_ior() {
+    OUT_FILE="$3"
+    echo "[$(date)] Deleting ${OUT_FILE}*"
+    rm -rf ${OUT_FILE}*
+}
+
+function run_haccio() {
+    FS_NAME="$1"
+    HACC_EXE="$2"
+    OUT_FILE="$3"
+    NNODES="$4"
+    NPROCS="$5"
+
+    echo "[$(date)] Submitting HACC-IO: ${FS_NAME}-${HACC_EXE}"
+    $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 20971520 "${OUT_FILE}" > "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${SLURM_JOBID}.out"
+    echo "[$(date)] Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
+}
+
+function clean_haccio() {
+    OUT_FILE="$3"
+    echo "[$(date)] Deleting ${OUT_FILE}*"
+    rm -rf ${OUT_FILE}*
+}
+
+function run_vpicio() {
+    FS_NAME="$1"
+    VPIC_EXE="$2"
+    OUT_FILE="$3"
+    NNODES="$4"
+    NPROCS="$5"
+
+    if [[ "$VPIC_EXE" =~ ^dbscan_read.* ]]; then
+        extra_args="-d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f"
+    elif [[ "$VPIC_EXE" =~ ^vpicio_uni.* ]]; then
+        extra_args=""
+    else
+        echo "[$(date)] Unknown VPIC exe [$VPIC_EXE]; not passing any extra CLI args" >&2
+        extra_args=""
+    fi
+    echo "[$(date)] Submitting VPIC-IO: ${FS_NAME}-${VPIC_EXE}"
+    $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" > "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-${VPIC_EXE}.${SLURM_JOBID}.out"
+    echo "[$(date)] Completed VPIC-IO: ${FS_NAME}-${VPIC_EXE}"
+}
+
+function clean_vpicio() {
+    OUT_FILE="$3"
+    echo "[$(date)] Deleting ${OUT_FILE}*"
+    rm -rf ${OUT_FILE}*
+}
+
+################################################################################
+###  IOR - MPI-IO shared-file and POSIX file-per-process
+################################################################################
+echo "$IOR_PARAM_SETS" | while read parameters
+do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]
+    then
+        continue
+    fi
+    run_ior $parameters
+done
+echo "$IOR_PARAM_SETS" | while read parameters
+do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]
+    then
+        continue
+    fi
+    clean_ior $parameters
+done
+
+################################################################################
+###  HACC-IO - Write and read using GLEAN file-per-process
+################################################################################
+echo "$HACC_PARAM_SETS" | while read parameters
+do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]
+    then
+        continue
+    fi
+    run_haccio $parameters
+done
+echo "$HACC_PARAM_SETS" | while read parameters
+do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]
+    then
+        continue
+    fi
+    clean_haccio $parameters
+done
+
+################################################################################
+###  VPIC-IO - Write and read using HDF5 shared file (VPIC-IO and BD-CATS-IO)
+################################################################################
+echo "$VPIC_PARAM_SETS" | while read parameters
+do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]
+    then
+        continue
+    fi
+    run_vpicio $parameters
+done
+echo "$VPIC_PARAM_SETS" | while read parameters
+do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]
+    then
+        continue
+    fi
+    clean_vpicio $parameters
+done
+
+
