@@ -24,32 +24,43 @@ export DARSHAN_LOGPATH="$TOKIO_LOGPATH"
 
 ### Set up a directory with wide striping
 module load lustre-cray_ari_s
-for out_dir in "/scratch1/scratchdirs/$USER/striped" "/scratch2/scratchdirs/$USER/striped" "/scratch3/scratchdirs/$USER/striped"
+for out_dir in "/scratch1/scratchdirs/$USER/striped" \
+               "/scratch2/scratchdirs/$USER/striped" \
+               "/scratch3/scratchdirs/$USER/striped"
 do
-    mkdir -p $out_dir
-    lfs setstripe -c -1 $out_dir
+    mkdir -p $out_dir && lfs setstripe -c -1 $out_dir
 done
+
+### Set up a directory with no striping (for file-per-process)
+module load lustre-cray_ari_s
+for out_dir in "/scratch1/scratchdirs/$USER/nostriped" \
+               "/scratch2/scratchdirs/$USER/nostriped" \
+               "/scratch3/scratchdirs/$USER/nostriped"
+do
+    mkdir -p $out_dir && lfs setstripe -c 1 $out_dir
+done
+
 
 read -r -d '' IOR_PARAM_SETS <<EOF
 # fs_name  ior_api output_file                                       nnode nproc
 # -------- ------- ------------------------------------------------- ----- -----
-  scratch1 mpiio   /scratch1/scratchdirs/$USER/striped/ior-mpiio.out 96    1536
-  scratch2 mpiio   /scratch2/scratchdirs/$USER/striped/ior-mpiio.out 96    1536
-  scratch3 mpiio   /scratch3/scratchdirs/$USER/striped/ior-mpiio.out 96    1536
-  scratch1 posix   /scratch1/scratchdirs/$USER/ior-posix.out         96    1536
-  scratch2 posix   /scratch2/scratchdirs/$USER/ior-posix.out         96    1536
-  scratch3 posix   /scratch3/scratchdirs/$USER/ior-posix.out         96    1536
+  scratch1 mpiio   /scratch1/scratchdirs/$USER/striped/ior.out       96     1536
+  scratch2 mpiio   /scratch2/scratchdirs/$USER/striped/ior.out       96     1536
+  scratch3 mpiio   /scratch3/scratchdirs/$USER/striped/ior.out       96     1536
+  scratch1 posix   /scratch1/scratchdirs/$USER/nostriped/ior.out     96     1536
+  scratch2 posix   /scratch2/scratchdirs/$USER/nostriped/ior.out     96     1536
+  scratch3 posix   /scratch3/scratchdirs/$USER/nostriped/ior.out     96     1536
 EOF
 
 read -r -d '' HACC_PARAM_SETS <<EOF
-# fs_name  hacc_exe      output_file                                  nnod nproc
-# -------- ------------  -------------------------------------------- ---- -----
-  scratch1 hacc_io_read  /scratch1/scratchdirs/$USER/haccio-read.out  96   1536
-  scratch2 hacc_io_read  /scratch2/scratchdirs/$USER/haccio-read.out  96   1536
-  scratch3 hacc_io_read  /scratch3/scratchdirs/$USER/haccio-read.out  96   1536
-  scratch1 hacc_io_write /scratch1/scratchdirs/$USER/haccio-write.out 96   1536
-  scratch2 hacc_io_write /scratch2/scratchdirs/$USER/haccio-write.out 96   1536
-  scratch3 hacc_io_write /scratch3/scratchdirs/$USER/haccio-write.out 96   1536
+# fs_name  hacc_exe      output_file                                            nnode nproc
+# -------- ------------  ------------------------------------------------------ ----- -----
+  scratch1 hacc_io_read  /scratch1/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
+  scratch2 hacc_io_read  /scratch2/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
+  scratch3 hacc_io_read  /scratch3/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
+  scratch1 hacc_io_write /scratch1/scratchdirs/$USER/nostriped/haccio-write.out 96    1536
+  scratch2 hacc_io_write /scratch2/scratchdirs/$USER/nostriped/haccio-write.out 96    1536
+  scratch3 hacc_io_write /scratch3/scratchdirs/$USER/nostriped/haccio-write.out 96    1536
 EOF
 
 read -r -d '' VPIC_PARAM_SETS <<EOF
