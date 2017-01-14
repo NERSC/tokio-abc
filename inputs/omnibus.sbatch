@@ -5,6 +5,7 @@
 #SBATCH -N 96
 #SBATCH -p regular
 #SBATCH -t 04:00:00
+#SBATCH --mail-user=glock@lbl.gov --mail-type=END
 
 ### if not running in slurm, just do a dry run
 if [ -z "$SLURM_JOBID" ]; then
@@ -22,6 +23,13 @@ vpic_exe_path="${SLURM_SUBMIT_DIR}/../vpic-io/install"
 TOKIO_LOGPATH="$SLURM_SUBMIT_DIR"
 export DARSHAN_LOGPATH="$TOKIO_LOGPATH"
 
+################################################################################
+###  System-specific input and setup parameters
+################################################################################
+
+###  Edison  ###################################################################
+
+if [ "$NERSC_HOST" == "edison" ]; then
 ### Set up a directory with wide striping
 module load lustre-cray_ari_s
 for out_dir in "/scratch1/scratchdirs/$USER/striped" \
@@ -55,12 +63,12 @@ EOF
 read -r -d '' HACC_PARAM_SETS <<EOF
 # fs_name  hacc_exe      output_file                                            nnode nproc
 # -------- ------------  ------------------------------------------------------ ----- -----
-  scratch1 hacc_io_read  /scratch1/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
-  scratch2 hacc_io_read  /scratch2/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
-  scratch3 hacc_io_read  /scratch3/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
   scratch1 hacc_io_write /scratch1/scratchdirs/$USER/nostriped/haccio-write.out 96    1536
   scratch2 hacc_io_write /scratch2/scratchdirs/$USER/nostriped/haccio-write.out 96    1536
   scratch3 hacc_io_write /scratch3/scratchdirs/$USER/nostriped/haccio-write.out 96    1536
+  scratch1 hacc_io_read  /scratch1/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
+  scratch2 hacc_io_read  /scratch2/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
+  scratch3 hacc_io_read  /scratch3/scratchdirs/$USER/nostriped/haccio-read.out  96    1536
 EOF
 
 read -r -d '' VPIC_PARAM_SETS <<EOF
@@ -74,6 +82,60 @@ read -r -d '' VPIC_PARAM_SETS <<EOF
   scratch3 dbscan_read    /scratch3/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
 EOF
 
+###  Cori  #####################################################################
+
+elif [ "$NERSC_HOST" == "cori" ]; then
+### Set up a directory with wide striping
+module load lustre-cray_ari_s
+mkdir -p $SCRATCH/striped && lfs setstripe -c -1 $SCRATCH/striped
+### ...and with no striping
+mkdir -p $SCRATCH/nostriped && lfs setstripe -c 1 $SCRATCH/nostriped
+
+read -r -d '' IOR_PARAM_SETS <<EOF
+# fs_name  ior_api output_file                                       nnode nproc
+# -------- ------- ------------------------------------------------- ----- -----
+  cscratch mpiio   /global/cscratch1/sd/$USER/striped/ior.out        96     1536
+  cscratch posix   /global/cscratch1/sd/$USER/nostriped/ior.out      96     1536
+  dwlg_str mpiio   $DW_JOB_STRIPED/ior.out                           96     1536
+  dwlg_pri posix   $DW_JOB_PRIVATE/ior.out                           96     1536
+EOF
+
+read -r -d '' HACC_PARAM_SETS <<EOF
+# fs_name  hacc_exe      output_file                                            nnode nproc
+# -------- ------------  ------------------------------------------------------ ----- -----
+  cscratch hacc_io_write /global/cscratch1/sd/$USER/nostriped/haccio-write.out 96    1536
+  dwlg_str hacc_io_write $DW_JOB_STRIPED/haccio-write.out                      96    1536
+  dwlg_pri hacc_io_write $DW_JOB_PRIVATE/haccio-write.out                      96    1536
+  cscratch hacc_io_read  /global/cscratch1/sd/$USER/nostriped/haccio-write.out 96    1536
+  dwlg_str hacc_io_read  $DW_JOB_STRIPED/haccio-write.out                      96    1536
+  dwlg_pri hacc_io_read  $DW_JOB_PRIVATE/haccio-write.out                      96    1536
+EOF
+
+read -r -d '' VPIC_PARAM_SETS <<EOF
+# fs_name  vpic_exe       output_file                                     nnod nproc
+# -------- -------------- ----------------------------------------------- ---- -----
+  cscratch vpicio_uni_dyn /global/cscratch1/sd/$USER/striped/vpicio.hdf5  96   1536
+  dwlg_str vpicio_uni_dyn $DW_JOB_STRIPED/vpicio.hdf5                     96   1536
+  cscratch dbscan_read    /global/cscratch1/sd/$USER/striped/vpicio.hdf5  96   1536
+  dwlg_str dbscan_read    $DW_JOB_STRIPED/vpicio.hdf5                     96   1536
+EOF
+
+###  Undefined #################################################################
+
+elif [ -z "$NERSC_HOST" ]; then
+    echo "[$(date)] Undefined NERSC_HOST" >&2
+    exit 1
+
+###  Unknown  ##################################################################
+
+else
+    echo "[$(date)] Unknown NERSC_HOST [$NERSC_HOST]" >&2
+    exit 1
+fi
+
+################################################################################
+###  Helper functions to read and execute system-specific parameter sets
+################################################################################
 function run_ior() {
     FS_NAME="$1"
     IOR_API="$2"
@@ -94,7 +156,13 @@ function run_ior() {
 function clean_ior() {
     OUT_FILE="$3"
     echo "[$(date)] Deleting ${OUT_FILE}*"
-    rm -rf ${OUT_FILE}*
+    ### if this is a private DataWarp namespace, we must delete all matches from
+    ### all namespaces
+    if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
+        srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
+    else
+        rm -rf ${OUT_FILE}*
+    fi
 }
 
 function run_haccio() {
@@ -112,7 +180,13 @@ function run_haccio() {
 function clean_haccio() {
     OUT_FILE="$3"
     echo "[$(date)] Deleting ${OUT_FILE}*"
-    rm -rf ${OUT_FILE}*
+    ### if this is a private DataWarp namespace, we must delete all matches from
+    ### all namespaces
+    if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
+        srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
+    else
+        rm -rf ${OUT_FILE}*
+    fi
 }
 
 function run_vpicio() {
@@ -138,7 +212,13 @@ function run_vpicio() {
 function clean_vpicio() {
     OUT_FILE="$3"
     echo "[$(date)] Deleting ${OUT_FILE}*"
-    rm -rf ${OUT_FILE}*
+    ### if this is a private DataWarp namespace, we must delete all matches from
+    ### all namespaces
+    if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
+        srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
+    else
+        rm -rf ${OUT_FILE}*
+    fi
 }
 
 ################################################################################
