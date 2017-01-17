@@ -23,6 +23,7 @@ then
   rc=$?
   echo "Running as job: $jid"
   if [ $? -eq 0 ]; then
+    qstat -lf $jid
     cqwait $jid
     # check error code
     ec=$(sed -n 's/.* exit code of \([0-9]\); initiating job cleanup and removal/\1/p' ${jid}.cobaltlog)
