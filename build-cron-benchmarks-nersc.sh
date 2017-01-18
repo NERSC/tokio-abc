@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 basedir=$(readlink -f $(dirname "$0"))
 
@@ -12,13 +12,17 @@ if [ "$NERSC_HOST" == "edison" ]; then
     module load autoconf automake
 fi
 
+if [ ! -z "$CRAY_CPU_TARGET" -a "$CRAY_CPU_TARGET" == "mic-knl" ]; then
+    EXTRA_AC_FLAGS="--host=x86_64-knl-linux"
+fi
+
 # build IOR
 if [ "$target" == "ior" -o "$target" == "all" ]; then
     cd $basedir/ior
     mkdir -p build
     ./bootstrap
     cd build
-    ../configure --prefix=$basedir/ior/install --without-gpfs
+    ../configure --prefix=$basedir/ior/install --without-gpfs $EXTRA_AC_FLAGS
     make install
 fi
 
@@ -29,7 +33,7 @@ if [ "$target" == "h5part" -o "$target" == "all" ]; then
     mkdir -p build
     ./bootstrap
     cd build
-    ../configure --prefix=$basedir/h5part/install --enable-parallel
+    ../configure --prefix=$basedir/h5part/install --enable-parallel $EXTRA_AC_FLAGS
     make install
 fi
 
