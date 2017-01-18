@@ -1,6 +1,14 @@
 #!/bin/bash
-# 2304 procs = 96 nodes on Edison, 72 on Cori/Haswell, 36 on Cori/KNL(@64c)
-# 1536 procs = 64 nodes on Edison, 48 on Cori/Haswell, 24 on Cori/KNL(@64c)
+### To run on NERSC Cori, do something like (for KNL)
+###
+###    sbatch --bb=./bb-multi.conf -C knl omnibus.sbatch
+###
+### or (for Haswell)
+###
+###    sbatch --bb=./bb-multi.conf -C haswell omnibus.sbatch
+###
+### 2304 procs = 96 nodes on Edison, 72 on Cori/Haswell, 36 on Cori/KNL(@64c)
+### 1536 procs = 64 nodes on Edison, 48 on Cori/Haswell, 24 on Cori/KNL(@64c)
 #SBATCH -J tokio-abc
 #SBATCH -N 96
 #SBATCH -p regular
