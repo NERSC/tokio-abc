@@ -19,14 +19,14 @@ PROJ_WD=/projects/radix-io/automated
 if [ $? -eq 0 ];
 then
   # submit to cobale
-  jid=$(qsub -A radix-io --cwd ${PROJ_WD}/runs -n 2048 -t 30 --mode script --env SCRATCH=${PROJ_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
+  jid=$(qsub -A radix-io --cwd ${PROJ_WD}/runs -n 2048 -t 30 --mode script --env SCRATCH=${PROJ_WD}:basedir=${JENKINS_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
   rc=$?
   echo "Running as job: $jid"
   if [ $? -eq 0 ]; then
     qstat -lf $jid
     cqwait $jid
     # check error code
-    ec=$(sed -n 's/.* exit code of \([0-9]\); initiating job cleanup and removal/\1/p' ${jid}.cobaltlog)
+    ec=$(sed -n 's/.* exit code of \([0-9]\); initiating job cleanup and removal/\1/p' ${PROJ_WD}/runs/${jid}.cobaltlog)
   fi
   if [ -n $exit_code  ] && [ "$ec" = "0" ]; then
     # return zero if the test script returned zero

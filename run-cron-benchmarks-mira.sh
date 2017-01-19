@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/bash -x
 
-basedir=$(readlink -f $(dirname "$0"))
+basedir=${basedir:-$(readlink -f $(dirname "$0"))}
 
 ior_exe=$basedir/ior/install/bin/ior
 ior_outdir=$SCRATCH/tmp
