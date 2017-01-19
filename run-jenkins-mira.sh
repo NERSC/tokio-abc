@@ -13,13 +13,16 @@ PROJ_WD=/projects/radix-io/automated
 # configure and build
 ./build-cron-benchmarks-mira.sh
 
-# copy script to GPFS to apease cobalt
-# cp ./run-cron-benchmarks-mira.sh ${PROJ_WD}
+# copy binaries to PFS
+for bin in ior/install/bin/ior;
+do
+  cp ${bin} ${PROJ_WD}/bin/.
+done
 
 if [ $? -eq 0 ];
 then
   # submit to cobale
-  jid=$(qsub -A radix-io --cwd ${PROJ_WD}/runs -n 2048 -t 30 --mode script --env SCRATCH=${PROJ_WD}:basedir=${JENKINS_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
+  jid=$(qsub -A radix-io --cwd ${PROJ_WD}/runs -n 2048 -t 30 --mode script --env JENKINS_WD=${JENKINS_WD}:PROJ_WD=${PROJ_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
   rc=$?
   echo "Running as job: $jid"
   if [ $? -eq 0 ]; then
