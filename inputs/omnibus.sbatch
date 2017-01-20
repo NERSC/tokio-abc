@@ -18,10 +18,18 @@
 ### if not running in slurm, just do a dry run
 if [ -z "$SLURM_JOBID" ]; then
     srun_exe="echo srun"
+    rm_exe="echo rm"
+    mkdir_exe="echo mkdir"
+    lfs_exe="echo lfs"
     SLURM_JOBID="0000000"
     SLURM_SUBMIT_DIR=$PWD
+    DW_JOB_STRIPED='$DW_JOB_STRIPED'
+    DW_JOB_PRIVATE='$DW_JOB_PRIVATE'
 else
     srun_exe="srun"
+    rm_exe="rm"
+    mkdir_exe="mkdir"
+    lfs_exe="lfs"
 fi
 
 ior_exe="${SLURM_SUBMIT_DIR}/../ior/install/bin/ior"
@@ -44,7 +52,7 @@ for out_dir in "/scratch1/scratchdirs/$USER/striped" \
                "/scratch2/scratchdirs/$USER/striped" \
                "/scratch3/scratchdirs/$USER/striped"
 do
-    mkdir -p $out_dir && lfs setstripe -c -1 $out_dir
+    $mkdir_exe -p $out_dir && $lfs_exe setstripe -c -1 $out_dir
 done
 
 ### Set up a directory with no striping (for file-per-process)
@@ -53,7 +61,7 @@ for out_dir in "/scratch1/scratchdirs/$USER/nostriped" \
                "/scratch2/scratchdirs/$USER/nostriped" \
                "/scratch3/scratchdirs/$USER/nostriped"
 do
-    mkdir -p $out_dir && lfs setstripe -c 1 $out_dir
+    $mkdir_exe -p $out_dir && $lfs_exe setstripe -c 1 $out_dir
 done
 
 
@@ -95,9 +103,9 @@ EOF
 elif [ "$NERSC_HOST" == "cori" ]; then
 ### Set up a directory with wide striping
 module load lustre-cray_ari_s
-mkdir -p $SCRATCH/striped && lfs setstripe -c -1 $SCRATCH/striped
+$mkdir_exe -p $SCRATCH/striped && $lfs_exe setstripe -c -1 $SCRATCH/striped
 ### ...and with no striping
-mkdir -p $SCRATCH/nostriped && lfs setstripe -c 1 $SCRATCH/nostriped
+$mkdir_exe -p $SCRATCH/nostriped && $lfs_exe setstripe -c 1 $SCRATCH/nostriped
 
 read -r -d '' IOR_PARAM_SETS <<EOF
 # fs_name  ior_api output_file                                       nnode nproc
@@ -157,7 +165,7 @@ function run_ior() {
          "$ior_exe" -s 4096 \
                     -H \
                     -o "${OUT_FILE}" \
-                    -f "${IOR_API}1m2.in" > "${TOKIO_LOGPATH}/ior-${FS_NAME}-${IOR_API}.${SLURM_JOBID}.out"
+                    -f "${IOR_API}1m2.in" | tee "${TOKIO_LOGPATH}/ior-${FS_NAME}-${IOR_API}.${SLURM_JOBID}.out"
     echo "[$(date)] Completed IOR: ${FS_NAME}-${IOR_API}"
 }
 
@@ -169,7 +177,7 @@ function clean_ior() {
     if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
         srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
     else
-        rm -rf ${OUT_FILE}*
+        $rm_exe -rf ${OUT_FILE}*
     fi
 }
 
@@ -181,7 +189,7 @@ function run_haccio() {
     NPROCS="$5"
 
     echo "[$(date)] Submitting HACC-IO: ${FS_NAME}-${HACC_EXE}"
-    $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 20971520 "${OUT_FILE}" > "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${SLURM_JOBID}.out"
+    $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 20971520 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${SLURM_JOBID}.out"
     echo "[$(date)] Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
 }
 
@@ -193,7 +201,7 @@ function clean_haccio() {
     if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
         srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
     else
-        rm -rf ${OUT_FILE}*
+        $rm_exe -rf ${OUT_FILE}*
     fi
 }
 
@@ -213,7 +221,7 @@ function run_vpicio() {
         extra_args=""
     fi
     echo "[$(date)] Submitting VPIC-IO: ${FS_NAME}-${VPIC_EXE}"
-    $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" > "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-${VPIC_EXE}.${SLURM_JOBID}.out"
+    $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-${VPIC_EXE}.${SLURM_JOBID}.out"
     echo "[$(date)] Completed VPIC-IO: ${FS_NAME}-${VPIC_EXE}"
 }
 
@@ -225,7 +233,7 @@ function clean_vpicio() {
     if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
         srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
     else
-        rm -rf ${OUT_FILE}*
+        $rm_exe -rf ${OUT_FILE}*
     fi
 }
 
