@@ -9,6 +9,7 @@ soft add +mpiwrapper-xl.legacy
 
 JENKINS_WD=$PWD
 PROJ_WD=/projects/radix-io/automated
+day=$(date +"%Y%m%d")
 
 # configure and build
 ./build-cron-benchmarks-mira.sh
@@ -23,7 +24,15 @@ then
     cp ${bin} ${PROJ_WD}/bin/.
   done
 
-  # submit to cobale
+  # record df
+  mmdf mira-fs1 > ${PROJ_WD}/runs/df_fs1_${day}.txt
+  mmdf mira-fs0 > ${PROJ_WD}/runs/df_fs0_${day}.txt
+
+  # record nsd status
+  mmlsdisk mira-fs1 > ${PROJ_WD}/runs/disk_status_fs1_${day}.txt
+  mmlsdisk mira-fs0 > ${PROJ_WD}/runs/disk_status_fs0_${day}.txt
+
+  # submit to cobalt
   jid=$(qsub -A radix-io --cwd ${PROJ_WD}/runs -n 2048 -t 30 --mode script --env JENKINS_WD=${JENKINS_WD}:PROJ_WD=${PROJ_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
   rc=$?
   echo "Running as job: $jid"
