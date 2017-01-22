@@ -75,45 +75,44 @@ rm -rf /scratch3/scratchdirs/$USER/striped/vpicio.hdf5*
 }
 
 function run_cori_knl() {
-mkdir -p /global/cscratch1/sd/glock/striped
-lfs setstripe -c -1 /global/cscratch1/sd/glock/striped
-mkdir -p /global/cscratch1/sd/glock/nostriped
-lfs setstripe -c 1 /global/cscratch1/sd/glock/nostriped
-
-srun -n 1536 -N 96 $REPO_BASE/ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/glock/striped/ior.out -f mpiio1m2.in
-srun -n 1536 -N 96 $REPO_BASE/ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/glock/nostriped/ior.out -f posix1m2.in
-srun -n 1536 -N 96 $REPO_BASE/ior/install/bin/ior -s 4096 -H -o $DW_JOB_STRIPED/ior.out -f mpiio1m2.in
-srun -n 1536 -N 96 $REPO_BASE/ior/install/bin/ior -s 4096 -H -o $DW_JOB_PRIVATE/ior.out -f posix1m2.in
-rm -rf /global/cscratch1/sd/glock/striped/ior.out*
-rm -rf /global/cscratch1/sd/glock/nostriped/ior.out*
+mkdir -p /global/cscratch1/sd/$USER/striped
+lfs setstripe -c -1 /global/cscratch1/sd/$USER/striped
+mkdir -p /global/cscratch1/sd/$USER/nostriped
+lfs setstripe -c 1 /global/cscratch1/sd/$USER/nostriped
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/$USER/striped/ior.out -f $SLURM_SUBMIT_DIR/../inputs/mpiio1m2.in
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/$USER/nostriped/ior.out -f $SLURM_SUBMIT_DIR/../inputs/posix1m2.in
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o $DW_JOB_STRIPED/ior.out -f $SLURM_SUBMIT_DIR/../inputs/mpiio1m2.in
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o $DW_JOB_PRIVATE/ior.out -f $SLURM_SUBMIT_DIR/../inputs/posix1m2.in
+rm -rf /global/cscratch1/sd/$USER/striped/ior.out*
+rm -rf /global/cscratch1/sd/$USER/nostriped/ior.out*
 rm -rf $DW_JOB_STRIPED/ior.out*
 rm -rf $DW_JOB_PRIVATE/ior.out*
-srun -n 1536 -N 96 $REPO_BASE/hacc-io/install/hacc_io_write 20971520 /global/cscratch1/sd/glock/nostriped/haccio-write.out
-srun -n 1536 -N 96 $REPO_BASE/hacc-io/install/hacc_io_write 20971520 $DW_JOB_STRIPED/haccio-write.out
-srun -n 1536 -N 96 $REPO_BASE/hacc-io/install/hacc_io_write 20971520 $DW_JOB_PRIVATE/haccio-write.out
-srun -n 1536 -N 96 $REPO_BASE/hacc-io/install/hacc_io_read 20971520 /global/cscratch1/sd/glock/nostriped/haccio-write.out
-srun -n 1536 -N 96 $REPO_BASE/hacc-io/install/hacc_io_read 20971520 $DW_JOB_STRIPED/haccio-write.out
-srun -n 1536 -N 96 $REPO_BASE/hacc-io/install/hacc_io_read 20971520 $DW_JOB_PRIVATE/haccio-write.out
-rm -rf /global/cscratch1/sd/glock/nostriped/haccio-write.out*
-rm -rf $DW_JOB_STRIPED/haccio-write.out*
-rm -rf $DW_JOB_PRIVATE/haccio-write.out*
-rm -rf /global/cscratch1/sd/glock/nostriped/haccio-write.out*
-rm -rf $DW_JOB_STRIPED/haccio-write.out*
-rm -rf $DW_JOB_PRIVATE/haccio-write.out*
-srun -n 1536 -N 96 $REPO_BASE/vpic-io/install/vpicio_uni_dyn /global/cscratch1/sd/glock/striped/vpicio.hdf5
-srun -n 1536 -N 96 $REPO_BASE/vpic-io/install/vpicio_uni_dyn $DW_JOB_STRIPED/vpicio.hdf5
-srun -n 1536 -N 96 $REPO_BASE/vpic-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f /global/cscratch1/sd/glock/striped/vpicio.hdf5
-srun -n 1536 -N 96 $REPO_BASE/vpic-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f $DW_JOB_STRIPED/vpicio.hdf5
-rm -rf /global/cscratch1/sd/glock/striped/vpicio.hdf5*
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 /global/cscratch1/sd/$USER/nostriped/haccio.out
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 $DW_JOB_STRIPED/haccio.out
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 $DW_JOB_PRIVATE/haccio.out
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 /global/cscratch1/sd/$USER/nostriped/haccio.out
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 $DW_JOB_STRIPED/haccio.out
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 $DW_JOB_PRIVATE/haccio.out
+rm -rf /global/cscratch1/sd/$USER/nostriped/haccio.out*
+rm -rf $DW_JOB_STRIPED/haccio.out*
+rm -rf $DW_JOB_PRIVATE/haccio.out*
+rm -rf /global/cscratch1/sd/$USER/nostriped/haccio.out*
+rm -rf $DW_JOB_STRIPED/haccio.out*
+rm -rf $DW_JOB_PRIVATE/haccio.out*
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../vpic-io/install/vpicio_uni_dyn /global/cscratch1/sd/$USER/striped/vpicio.hdf5
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../vpic-io/install/vpicio_uni_dyn $DW_JOB_STRIPED/vpicio.hdf5
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../bdcats-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f /global/cscratch1/sd/$USER/striped/vpicio.hdf5
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../bdcats-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f $DW_JOB_STRIPED/vpicio.hdf5
+rm -rf /global/cscratch1/sd/$USER/striped/vpicio.hdf5*
 rm -rf $DW_JOB_STRIPED/vpicio.hdf5*
-rm -rf /global/cscratch1/sd/glock/striped/vpicio.hdf5*
+rm -rf /global/cscratch1/sd/$USER/striped/vpicio.hdf5*
 rm -rf $DW_JOB_STRIPED/vpicio.hdf5*
 }
 
 if [ "$NERSC_HOST" == "edison" ]; then
     run_edison
 elif [ "$NERSC_HOST" == "cori" ]; then
-    run_cori
+    run_cori_knl
 else
     echo "Unknown NERSC_HOST(=$NERSC_HOST)" >&2
     exit 1
