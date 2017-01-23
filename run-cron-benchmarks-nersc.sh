@@ -14,6 +14,9 @@
 #SBATCH -p regular
 #SBATCH -t 04:00:00
 #SBATCH --mail-user=glock@lbl.gov --mail-type=END
+#SBATCH -C knl
+#DW jobdw type=scratch access_mode=striped capacity=19200GiB
+#DW jobdw type=scratch access_mode=private capacity=19200GiB
 
 module load lustre-cray_ari_s
 
@@ -75,30 +78,30 @@ mkdir -p /global/cscratch1/sd/$USER/striped
 lfs setstripe -c -1 /global/cscratch1/sd/$USER/striped
 mkdir -p /global/cscratch1/sd/$USER/nostriped
 lfs setstripe -c 1 /global/cscratch1/sd/$USER/nostriped
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/$USER/striped/ior.out -f $SLURM_SUBMIT_DIR/../inputs/mpiio1m2.in
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/$USER/nostriped/ior.out -f $SLURM_SUBMIT_DIR/../inputs/posix1m2.in
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o $DW_JOB_STRIPED/ior.out -f $SLURM_SUBMIT_DIR/../inputs/mpiio1m2.in
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o $DW_JOB_PRIVATE/ior.out -f $SLURM_SUBMIT_DIR/../inputs/posix1m2.in
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/$USER/striped/ior.out -f $SLURM_SUBMIT_DIR/../inputs/mpiio1m2.in > "ior-1.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o /global/cscratch1/sd/$USER/nostriped/ior.out -f $SLURM_SUBMIT_DIR/../inputs/posix1m2.in > "ior-2.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o $DW_JOB_STRIPED/ior.out -f $SLURM_SUBMIT_DIR/../inputs/mpiio1m2.in > "ior-3.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../ior/install/bin/ior -s 4096 -H -o $DW_JOB_PRIVATE/ior.out -f $SLURM_SUBMIT_DIR/../inputs/posix1m2.in > "ior-4.${SLURM_JOBID}.out" 2>&1
 rm -rf /global/cscratch1/sd/$USER/striped/ior.out*
 rm -rf /global/cscratch1/sd/$USER/nostriped/ior.out*
 rm -rf $DW_JOB_STRIPED/ior.out*
 rm -rf $DW_JOB_PRIVATE/ior.out*
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 /global/cscratch1/sd/$USER/nostriped/haccio.out
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 $DW_JOB_STRIPED/haccio.out
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 $DW_JOB_PRIVATE/haccio.out
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 /global/cscratch1/sd/$USER/nostriped/haccio.out
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 $DW_JOB_STRIPED/haccio.out
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 $DW_JOB_PRIVATE/haccio.out
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 /global/cscratch1/sd/$USER/nostriped/haccio.out > "haccio-write-1.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 $DW_JOB_STRIPED/haccio.out > "haccio-write-2.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_write 20971520 $DW_JOB_PRIVATE/haccio.out > "haccio-write-3.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 /global/cscratch1/sd/$USER/nostriped/haccio.out > "haccio-read-1.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 $DW_JOB_STRIPED/haccio.out > "haccio-read-2.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../hacc-io/install/hacc_io_read 20971520 $DW_JOB_PRIVATE/haccio.out > "haccio-read-4.${SLURM_JOBID}.out" 2>&1
 rm -rf /global/cscratch1/sd/$USER/nostriped/haccio.out*
 rm -rf $DW_JOB_STRIPED/haccio.out*
 rm -rf $DW_JOB_PRIVATE/haccio.out*
 rm -rf /global/cscratch1/sd/$USER/nostriped/haccio.out*
 rm -rf $DW_JOB_STRIPED/haccio.out*
 rm -rf $DW_JOB_PRIVATE/haccio.out*
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../vpic-io/install/vpicio_uni_dyn /global/cscratch1/sd/$USER/striped/vpicio.hdf5
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../vpic-io/install/vpicio_uni_dyn $DW_JOB_STRIPED/vpicio.hdf5
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../bdcats-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f /global/cscratch1/sd/$USER/striped/vpicio.hdf5
-srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../bdcats-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f $DW_JOB_STRIPED/vpicio.hdf5
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../vpic-io/install/vpicio_uni_dyn /global/cscratch1/sd/$USER/striped/vpicio.hdf5 > "vpicio-1.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../vpic-io/install/vpicio_uni_dyn $DW_JOB_STRIPED/vpicio.hdf5 > "vpicio-2.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../bdcats-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f /global/cscratch1/sd/$USER/striped/vpicio.hdf5 > "bdcatsio-1.${SLURM_JOBID}.out" 2>&1
+srun -n 1536 -N 96 $SLURM_SUBMIT_DIR/../bdcats-io/install/dbscan_read -d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f $DW_JOB_STRIPED/vpicio.hdf5 > "bdcatsio-1.${SLURM_JOBID}.out" 2>&1
 rm -rf /global/cscratch1/sd/$USER/striped/vpicio.hdf5*
 rm -rf $DW_JOB_STRIPED/vpicio.hdf5*
 rm -rf /global/cscratch1/sd/$USER/striped/vpicio.hdf5*
