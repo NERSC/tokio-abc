@@ -100,9 +100,9 @@ read -r -d '' VPIC_PARAM_SETS <<EOF
   scratch1 vpic-io/install/vpicio_uni_dyn /scratch1/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
   scratch2 vpic-io/install/vpicio_uni_dyn /scratch2/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
   scratch3 vpic-io/install/vpicio_uni_dyn /scratch3/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
-  scratch1 dbcats-io/install/dbscan_read    /scratch1/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
-  scratch2 dbcats-io/install/dbscan_read    /scratch2/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
-  scratch3 dbcats-io/install/dbscan_read    /scratch3/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch1 bdcats-io/install/dbscan_read    /scratch1/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch2 bdcats-io/install/dbscan_read    /scratch2/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
+  scratch3 bdcats-io/install/dbscan_read    /scratch3/scratchdirs/$USER/striped/vpicio.hdf5 96   1536
 EOF
 
 ###  Cori  #####################################################################
