@@ -6,17 +6,17 @@ IOR START
     repetitions=1        # -i N  repetitions -- number of repetitions of test
     verbose=1            # -v    verbose -- output information (repeating flag increases level)
 ### keepFile=1           # -k    keepFile -- don't remove the test file(s) on program exit
-    filePerProc=0        # -F    filePerProc -- file-per-process
 
 # MPIIO shared file tests
 # 1m2 test
     api=MPIIO            # -a S  api --  API for I/O [POSIX|MPIIO|HDF5|NCMPI]
-### testFile = singdir/IOR_MPIIO_1m2 #  -o S  testFile -- full name for test
-    hintsFileName=mpiiohints #  -U S  hintsFileName -- full name for hints file
+    filePerProc=0        # -F    filePerProc -- file-per-process
     collective=1         # -c    collective -- collective I/O
+### testFile = singdir/IOR_MPIIO_1m2 #  -o S  testFile -- full name for test
+    hintsFileName=inputs/mpiiohints #  -U S  hintsFileName -- full name for hints file
 ### segmentCount=2048    # -s N  segmentCount -- number of segments
-    blockSize=1048576    # -b N  blockSize -- contiguous bytes to write per task
-    transferSize=1048576 # -t N  transferSize -- size of transfer in bytes
+    blockSize=4194304    # -b N  blockSize -- contiguous bytes to write per task
+    transferSize=4194304 # -t N  transferSize -- size of transfer in bytes
 RUN
 
 IOR STOP
