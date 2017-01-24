@@ -36,8 +36,7 @@ function run_ior() {
 
 function clean_ior() {
     OUT_FILE="$2"
-    printl "Deleting ${OUT_FILE}*"
-    rm -rf ${OUT_FILE}*
+    # no cleanup necessary due to IOR's keepFile option being disabled
 }
 
 ################################################################################
