@@ -169,8 +169,7 @@ function run_ior() {
     printl "Submitting IOR: ${FS_NAME}-${IOR_API}"
     $srun_exe -n ${NPROCS} \
          -N ${NNODES} \
-         "$ior_exe" -s 4096 \
-                    -H \
+         "$ior_exe" -H \
                     -o "${OUT_FILE}" \
                     -f "${REPO_BASE_DIR}/inputs/${IOR_API}1m2.in" | tee "${TOKIO_LOGPATH}/ior-${FS_NAME}-${IOR_API}.${SLURM_JOBID}.out"
     printl "Completed IOR: ${FS_NAME}-${IOR_API}"
