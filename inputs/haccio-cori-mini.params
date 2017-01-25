@@ -1,0 +1,8 @@
+# fs_name  hacc_exe      output_file                                     nnode nproc
+# -------- ------------  ----------------------------------------------- ----- -----
+  cscratch hacc_io_write /global/cscratch1/sd/$USER/nostriped/haccio.out 16    256 
+  dwlg_str hacc_io_write $DW_JOB_STRIPED/haccio.out                      16    256 
+  dwlg_pri hacc_io_write $DW_JOB_PRIVATE/haccio.out                      16    256 
+  cscratch hacc_io_read  /global/cscratch1/sd/$USER/nostriped/haccio.out 16    256 
+  dwlg_str hacc_io_read  $DW_JOB_STRIPED/haccio.out                      16    256 
+  dwlg_pri hacc_io_read  $DW_JOB_PRIVATE/haccio.out                      16    256 

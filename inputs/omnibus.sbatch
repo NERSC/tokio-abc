@@ -12,18 +12,16 @@
 ###    sbatch --bbf=../inputs/bb-multi.conf -C haswell ../inputs/omnibus.sbatch
 ###
 #SBATCH -J tokio-abc
-#SBATCH -N 96
+#SBATCH -N 16
 #SBATCH -p regular
-#SBATCH -t 04:00:00
-#SBATCH --mail-user=glock@lbl.gov --mail-type=END
-#SBATCH -C knl
-#DW jobdw type=scratch access_mode=striped capacity=19200GiB
-#DW jobdw type=scratch access_mode=private capacity=19200GiB
+#SBATCH -t 02:00:00
+# SBATCH --mail-user=glock@lbl.gov --mail-type=END
+# SBATCH -C knl
+# DW jobdw type=scratch access_mode=striped capacity=19200GiB
+# DW jobdw type=scratch access_mode=private capacity=19200GiB
 
 ### implicit that this script is run from a subdirectory of the repo base
-if [ -z "$REPO_BASE_DIR" ]; then
-    REPO_BASE_DIR=$(readlink -f $PWD/..)
-fi
+export REPO_BASE_DIR=${REPO_BASE_DIR:-$(readlink -f $PWD/..)}
 
 ### if not running in Slurm, just do a dry run
 if [ -z "$SLURM_JOBID" ]; then
@@ -31,8 +29,8 @@ if [ -z "$SLURM_JOBID" ]; then
     rm_exe="echo rm"
     mkdir_exe="echo mkdir"
     lfs_exe="echo lfs"
-    TOKIO_JOBID="0000000"
-    TOKIO_JOBDIR="$PWD"
+    export TOKIO_JOBID="0000000"
+    export TOKIO_JOBDIR="$PWD"
     export DW_JOB_STRIPED='$DW_JOB_STRIPED' # export so that `envsubst` sees it
     export DW_JOB_PRIVATE='$DW_JOB_PRIVATE' # export so that `envsubst` sees it
     function printlog() {
@@ -46,17 +44,18 @@ else
     rm_exe="rm"
     mkdir_exe="mkdir"
     lfs_exe="lfs"
-    TOKIO_JOBID="$SLURM_JOBID"
-    TOKIO_JOBDIR="$SLURM_SUBMIT_DIR"
+    export TOKIO_JOBID="$SLURM_JOBID"
+    export TOKIO_JOBDIR="$SLURM_SUBMIT_DIR"
     function printlog() {
         echo "[$(date)] $@"
+    }
+    function printerr() {
+        echo "[$(date)] $@" >&2
     }
 fi
 
 ### location to dump the stderr/stdout of each benchmark
-if [ -z "$TOKIO_LOGPATH" ]; then
-    TOKIO_LOGPATH="$TOKIO_JOBDIR"
-fi
+export TOKIO_LOGPATH=${TOKIO_LOGPATH:-$TOKIO_JOBDIR}
 
 ### the following assumes Darshan was configured with
 ###    --with-log-path-by-env=DARSHAN_LOGPATH
@@ -74,7 +73,7 @@ vpic_exe_path="${REPO_BASE_DIR}"
 
 ###  Edison  ###################################################################
 
-if [ "$NERSC_HOST" == "edison" ]; then
+if [ "$NERSC_HOST" == "edison" -o "$NERSC_HOST" == "edison-mini" ]; then
     ### Set up a directory with wide striping
     module load lustre-cray_ari_s
     for out_dir in "/scratch1/scratchdirs/$USER/striped" \
@@ -96,7 +95,7 @@ if [ "$NERSC_HOST" == "edison" ]; then
     VPICIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/vpicio-${NERSC_HOST}.params"
 
 ###  Cori  #####################################################################
-elif [ "$NERSC_HOST" == "cori" ]; then
+elif [ "$NERSC_HOST" == "cori" -o "$NERSC_HOST" == "cori-mini" ]; then
     ### Set up a directory with wide striping
     module load lustre-cray_ari_s
     $mkdir_exe -p $SCRATCH/striped && $lfs_exe setstripe -c -1 $SCRATCH/striped
@@ -129,8 +128,9 @@ function run_ior() {
     NNODES="$4"
     NPROCS="$5"
 
+    mkdir -p "$(dirname "$OUT_FILE")"
     printlog "Submitting IOR: ${FS_NAME}-${IOR_API}"
-    MPICH_MPIIO_HINTS="*:romio_cb_read=enable,romio_cb_write=enable" \
+    MPICH_MPIIO_HINTS="*:romio_cb_read=enable:romio_cb_write=enable" \
         $srun_exe -n ${NPROCS} \
          -N ${NNODES} \
          "$ior_exe" -H \
@@ -141,13 +141,15 @@ function run_ior() {
 
 function clean_ior() {
     OUT_FILE="$3"
-    printlog "Deleting ${OUT_FILE}*"
-    ### if this is a private DataWarp namespace, we must delete all matches from
-    ### all namespaces
-    if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-        srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
-    else
-        $rm_exe -rf ${OUT_FILE}*
+    if [ ! -z "$OUT_FILE" ]; then
+        printlog "Deleting ${OUT_FILE}*"
+        ### if this is a private DataWarp namespace, we must delete all matches
+        ### from all namespaces
+        if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
+            srun --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+        else
+            $rm_exe -rf ${OUT_FILE}*
+        fi
     fi
 }
 
@@ -158,6 +160,7 @@ function run_haccio() {
     NNODES="$4"
     NPROCS="$5"
 
+    mkdir -p "$(dirname "$OUT_FILE")"
     printlog "Submitting HACC-IO: ${FS_NAME}-${HACC_EXE}"
     $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 20971520 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
     printlog "Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
@@ -165,13 +168,15 @@ function run_haccio() {
 
 function clean_haccio() {
     OUT_FILE="$3"
-    printlog "Deleting ${OUT_FILE}*"
-    ### if this is a private DataWarp namespace, we must delete all matches from
-    ### all namespaces
-    if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-        srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
-    else
-        $rm_exe -rf ${OUT_FILE}*
+    if [ ! -z "$OUT_FILE" ]; then
+        printlog "Deleting ${OUT_FILE}*"
+        ### if this is a private DataWarp namespace, we must delete all matches from
+        ### all namespaces
+        if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
+            srun --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+        else
+            $rm_exe -rf ${OUT_FILE}*
+        fi
     fi
 }
 
@@ -182,6 +187,7 @@ function run_vpicio() {
     NNODES="$4"
     NPROCS="$5"
 
+    mkdir -p "$(dirname "$OUT_FILE")"
     if [[ "$VPIC_EXE" =~ dbscan_read.* ]]; then
         extra_args="-d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f"
     elif [[ "$VPIC_EXE" =~ vpicio_uni.* ]]; then
@@ -197,13 +203,15 @@ function run_vpicio() {
 
 function clean_vpicio() {
     OUT_FILE="$3"
-    printlog "Deleting ${OUT_FILE}*"
-    ### if this is a private DataWarp namespace, we must delete all matches from
-    ### all namespaces
-    if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-        srun --ntasks-per-node=1 bash -c "rm ${OUT_FILE}*"
-    else
-        $rm_exe -rf ${OUT_FILE}*
+    if [ ! -z "$OUT_FILE" ]; then
+        printlog "Deleting ${OUT_FILE}*"
+        ### if this is a private DataWarp namespace, we must delete all matches from
+        ### all namespaces
+        if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
+            srun --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+        else
+            $rm_exe -rf ${OUT_FILE}*
+        fi
     fi
 }
 
@@ -214,15 +222,20 @@ if [ ! -f "$IOR_PARAMS_FILE" ]; then
     printerr "IOR_PARAMS_FILE=[$IOR_PARAMS_FILE] not found"
     IOR_PARAMS_FILE=/dev/null
 fi
-envsubst < "$IOR_PARAMS_FILE" | while read -r parameters
-do
+PARAM_LINES=()
+while read -r parameters; do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
+        continue
+    fi
+    PARAM_LINES+=("$parameters")
+done <<< "$(envsubst < "$IOR_PARAMS_FILE")"
+for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
     run_ior $parameters
 done
-envsubst < "$IOR_PARAMS_FILE" | while read -r parameters
-do
+for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
@@ -236,15 +249,20 @@ if [ ! -f "$HACCIO_PARAMS_FILE" ]; then
     printerr "HACCIO_PARAMS_FILE=[$HACCIO_PARAMS_FILE] not found"
     HACCIO_PARAMS_FILE=/dev/null
 fi
-envsubst < "$HACCIO_PARAMS_FILE" | while read -r parameters
-do
+PARAM_LINES=()
+while read -r parameters; do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
+        continue
+    fi
+    PARAM_LINES+=("$parameters")
+done <<< "$(envsubst < "$HACCIO_PARAMS_FILE")"
+for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
     run_haccio $parameters
 done
-envsubst < "$HACCIO_PARAMS_FILE" | while read -r parameters
-do
+for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
@@ -258,15 +276,20 @@ if [ ! -f "$VPICIO_PARAMS_FILE" ]; then
     printerr "VPICIO_PARAMS_FILE=[$VPICIO_PARAMS_FILE] not found"
     VPICIO_PARAMS_FILE=/dev/null
 fi
-envsubst < "$VPICIO_PARAMS_FILE" | while read -r parameters
-do
+PARAM_LINES=()
+while read -r parameters; do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
+        continue
+    fi
+    PARAM_LINES+=("$parameters")
+done <<< "$(envsubst < "$VPICIO_PARAMS_FILE")"
+for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
     run_vpicio $parameters
 done
-envsubst < "$VPICIO_PARAMS_FILE" | while read -r parameters
-do
+for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi

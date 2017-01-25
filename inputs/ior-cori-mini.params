@@ -1,0 +1,6 @@
+# fs_name  ior_api output_file                                       nnode nproc
+# -------- ------- ------------------------------------------------- ----- -----
+  cscratch mpiio   /global/cscratch1/sd/$USER/striped/ior.out        16     256 
+  cscratch posix   /global/cscratch1/sd/$USER/nostriped/ior.out      16     256 
+  dwlg_str mpiio   $DW_JOB_STRIPED/ior.out                           16     256 
+  dwlg_pri posix   $DW_JOB_PRIVATE/ior.out                           16     256 
