@@ -5,6 +5,9 @@ IOR
      * added a small manual bug fix for Mira by commenting out line 232 in ior.c
          * getenv("USER") returns NULL, causing segfault
          * this line is only used for HDFS backend
+     * added a bug fix that prevented read-only tests from working
+         * MPI_MODE_RDONLY was being set without removing incompatible flags
+         * ...also a result of the HDFS backend
 
 HACC-IO
 ================================================================================
