@@ -7,8 +7,8 @@
 #SBATCH -p debug
 #SBATCH -t 00:30:00
 #SBATCH -C knl
-#DW jobdw type=scratch access_mode=striped capacity=19200GiB
-#DW jobdw type=scratch access_mode=private capacity=19200GiB
+#DW jobdw type=scratch access_mode=striped capacity=7TiB pool=sm_pool
+#DW jobdw type=scratch access_mode=private capacity=7TiB pool=sm_pool
 
 export REPO_BASE_DIR="${SLURM_SUBMIT_DIR}"
 export TOKIO_LOGPATH="${SLURM_SUBMIT_DIR}/runs"
