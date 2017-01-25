@@ -1,0 +1,8 @@
+# fs_name  hacc_exe      output_file                                      nnode nproc
+# -------- ------------  ------------------------------------------------ ----- -----
+  scratch1 hacc_io_write /scratch1/scratchdirs/$USER/nostriped/haccio.out 4    64 
+  scratch2 hacc_io_write /scratch2/scratchdirs/$USER/nostriped/haccio.out 4    64 
+  scratch3 hacc_io_write /scratch3/scratchdirs/$USER/nostriped/haccio.out 4    64 
+  scratch1 hacc_io_read  /scratch1/scratchdirs/$USER/nostriped/haccio.out 4    64 
+  scratch2 hacc_io_read  /scratch2/scratchdirs/$USER/nostriped/haccio.out 4    64 
+  scratch3 hacc_io_read  /scratch3/scratchdirs/$USER/nostriped/haccio.out 4    64 

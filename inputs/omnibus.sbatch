@@ -1,24 +1,7 @@
 #!/bin/bash
-### This submit script is intended to be submitted from a subdirectory of the
+### This submit script is intended to be run from a subdirectory of the
 ### repository root, e.g., /home/$USER/this-repo/runs.  If you want to do
-### something different, change REPO_BASE_DIR below.
-###
-### To run on NERSC Cori, do something like (for KNL):
-###
-###    sbatch --bbf=../inputs/bb-multi.conf -C knl ../inputs/omnibus.sbatch
-###
-### or (for Haswell)
-###
-###    sbatch --bbf=../inputs/bb-multi.conf -C haswell ../inputs/omnibus.sbatch
-###
-#SBATCH -J tokio-abc
-#SBATCH -N 16
-#SBATCH -p regular
-#SBATCH -t 02:00:00
-# SBATCH --mail-user=glock@lbl.gov --mail-type=END
-# SBATCH -C knl
-# DW jobdw type=scratch access_mode=striped capacity=19200GiB
-# DW jobdw type=scratch access_mode=private capacity=19200GiB
+### something different, export REPO_BASE_DIR before invoking this script.
 
 ### implicit that this script is run from a subdirectory of the repo base
 export REPO_BASE_DIR=${REPO_BASE_DIR:-$(readlink -f $PWD/..)}
@@ -73,7 +56,7 @@ vpic_exe_path="${REPO_BASE_DIR}"
 
 ###  Edison  ###################################################################
 
-if [ "$NERSC_HOST" == "edison" -o "$NERSC_HOST" == "edison-mini" ]; then
+if [ "$NERSC_HOST" == "edison" -o "$NERSC_HOST" == "edison-mini" -o "$NERSC_HOST" == "edison-micro" ]; then
     ### Set up a directory with wide striping
     module load lustre-cray_ari_s
     for out_dir in "/scratch1/scratchdirs/$USER/striped" \
@@ -95,7 +78,7 @@ if [ "$NERSC_HOST" == "edison" -o "$NERSC_HOST" == "edison-mini" ]; then
     VPICIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/vpicio-${NERSC_HOST}.params"
 
 ###  Cori  #####################################################################
-elif [ "$NERSC_HOST" == "cori" -o "$NERSC_HOST" == "cori-mini" ]; then
+elif [ "$NERSC_HOST" == "cori" -o "$NERSC_HOST" == "cori-mini" -o "$NERSC_HOST" == "cori-micro" ]; then
     ### Set up a directory with wide striping
     module load lustre-cray_ari_s
     $mkdir_exe -p $SCRATCH/striped && $lfs_exe setstripe -c -1 $SCRATCH/striped

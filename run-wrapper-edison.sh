@@ -3,14 +3,14 @@
 # This submit script is intended to be submitted from the repository's base dir.
 #
 #SBATCH -J tokio-abc
-#SBATCH -N 16
+#SBATCH -N 4
 #SBATCH -p debug
 #SBATCH -t 00:30:00
 
 export REPO_BASE_DIR="${SLURM_SUBMIT_DIR}"
 export TOKIO_LOGPATH="${SLURM_SUBMIT_DIR}/runs"
 export DARSHAN_LOGPATH="${TOKIO_LOGPATH}"
-export NERSC_HOST="${NERSC_HOST}-mini"
+export NERSC_HOST="${NERSC_HOST}-micro"
 
 mkdir -p runs && cd runs
-sbatch ../inputs/omnibus.sbatch
+../inputs/omnibus.sbatch

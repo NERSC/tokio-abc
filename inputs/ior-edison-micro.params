@@ -1,0 +1,8 @@
+# fs_name  ior_api output_file                                       nnode nproc
+# -------- ------- ------------------------------------------------- ----- -----
+  scratch1 mpiio   /scratch1/scratchdirs/$USER/striped/ior.out       4     64 
+  scratch2 mpiio   /scratch2/scratchdirs/$USER/striped/ior.out       4     64 
+  scratch3 mpiio   /scratch3/scratchdirs/$USER/striped/ior.out       4     64 
+  scratch1 posix   /scratch1/scratchdirs/$USER/nostriped/ior.out     4     64 
+  scratch2 posix   /scratch2/scratchdirs/$USER/nostriped/ior.out     4     64 
+  scratch3 posix   /scratch3/scratchdirs/$USER/nostriped/ior.out     4     64 

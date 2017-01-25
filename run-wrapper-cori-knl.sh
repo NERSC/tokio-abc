@@ -16,4 +16,4 @@ export DARSHAN_LOGPATH="${TOKIO_LOGPATH}"
 export NERSC_HOST="${NERSC_HOST}-mini"
 
 mkdir -p runs && cd runs
-sbatch ../inputs/omnibus.sbatch
+../inputs/omnibus.sbatch

@@ -1,0 +1,6 @@
+# fs_name  vpic_exe                       output_file                                     nnod nproc
+# -------- ------------------------------ ----------------------------------------------- ---- -----
+  cscratch vpic-io/install/vpicio_uni_dyn /global/cscratch1/sd/$USER/striped/vpicio.hdf5  4   64 
+  dwlg_str vpic-io/install/vpicio_uni_dyn $DW_JOB_STRIPED/vpicio.hdf5                     4   64 
+  cscratch bdcats-io/install/dbscan_read  /global/cscratch1/sd/$USER/striped/vpicio.hdf5  4   64 
+  dwlg_str bdcats-io/install/dbscan_read  $DW_JOB_STRIPED/vpicio.hdf5                     4   64 
