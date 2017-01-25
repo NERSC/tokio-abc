@@ -26,7 +26,7 @@ function run_ior() {
     NPROCS="$3"
 
     printl "Submitting IOR: $IOR_API"
-    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --verbose=INFO : \
+    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --envs BGLOCKLESSMPIO_F_TYPE=0x47504653 --verbose=INFO : \
         $ior_exe -s 128 \
                  -H \
                  -o "$OUT_FILE" \
