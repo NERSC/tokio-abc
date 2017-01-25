@@ -4,7 +4,20 @@
 
 TODO
 
-## IOR
+## Test Matrix (NERSC)
+
+Benchmark | Nodes | Procs | GiB/proc  | I/O Motif
+----------|-------|-------|-----------|------------------------------------
+IOR       |  96   | 1536  | 4.0       | POSIX; file per process; write+read
+IOR       |  96   | 1536  | 4.0       | MPI-IO; shared file; write+read
+HACC-IO   |  96   | 1536  | 0.742     | GLEAN; file per process; write
+HACC-IO   |  96   | 1536  | 0.742     | GLEAN; file per process; read
+VPIC-IO   |  96   | 1536  | 1.0       | pHDF5; shared file; write
+BDCATS-IO |  96   | 1536  | 1.0       | pHDF5; shared file; read
+
+## Benchmark Descriptions
+
+### IOR
 
 The amount of data and the pattern by which it is accessed by the IOR benchmark
 code is primarily a product of three configuration parameters:
@@ -43,7 +56,7 @@ where
 - `-o $SCRATCH/IOR_file` writes to the `$SCRATCH` file system
 - `-v` increases verbosity a little
 
-## HACC-IO
+### HACC-IO
 
 Both read and write versions of the HACC-IO benchmark take two command-line
 arguments:
@@ -63,7 +76,7 @@ When running the `hacc_io_read` benchmark, specify the same output file path
 (e.g., `$SCRATCH/hacc.dat`) used when running `hacc_io_write`.  HACC-IO will
 use this as the base file name and suffix per-rank identifiers on each file.
 
-## VPIC-IO
+### VPIC-IO
 
 VPIC-IO is an I/O kernel that emulates the writing of a checkpoint file as
 performed by the [VPIC application][].  It is characterized by 
@@ -85,7 +98,7 @@ will run VPIC-IO across 32 processes and write 32 GiB (a fixed 1 GiB/process) to
 `$SCRATCH/vpicio.h5part` (which need not exist).  It does not touch any other
 file systems or `$PWD`.
 
-## BD-CATS-IO
+### BD-CATS-IO
 
 BD-CATS-IO is an I/O trace written by Suren that is derived from the
 [BD-CATS clustering system][] which performs clustering analysis on large H5Part
