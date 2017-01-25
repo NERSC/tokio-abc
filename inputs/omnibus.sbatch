@@ -107,18 +107,32 @@ fi
 function run_ior() {
     FS_NAME="$1"
     IOR_API="$2"
-    OUT_FILE="$3"
-    NNODES="$4"
-    NPROCS="$5"
+    READ_OR_WRITE="$3"
+    OUT_FILE="$4"
+    NNODES="$5"
+    NPROCS="$6"
+
+    if [ "$READ_OR_WRITE" == "write" ]; then
+        IOR_CLI_ARGS="-k -w"
+    elif [ "$READ_OR_WRITE" == "read" ]; then
+        IOR_CLI_ARGS="-r"
+    else
+        printerr "Unknown read-or-write parameter [$READ_OR_WRITE]"
+        IOR_CLI_ARGS=""
+        # warn, but attempt to run r+w
+    fi
 
     mkdir -p "$(dirname "$OUT_FILE")"
     printlog "Submitting IOR: ${FS_NAME}-${IOR_API}"
-    MPICH_MPIIO_HINTS="*:romio_cb_read=enable:romio_cb_write=enable" \
+    MPICH_MPIIO_HINTS="*:romio_cb_read=enable:romio_cb_write=enable"
+    # write-only, keep output files
+    MPICH_MPIIO_HINTS="$MPICH_MPIIO_HINTS" \
         $srun_exe -n ${NPROCS} \
          -N ${NNODES} \
          "$ior_exe" -H \
+                    $IOR_CLI_ARGS \
                     -o "${OUT_FILE}" \
-                    -f "${REPO_BASE_DIR}/inputs/${IOR_API}1m2.in" | tee "${TOKIO_LOGPATH}/ior-${FS_NAME}-${IOR_API}.${TOKIO_JOBID}.out"
+                    -f "${REPO_BASE_DIR}/inputs/${IOR_API}1m2.in" | tee "${TOKIO_LOGPATH}/ior_${READ_OR_WRITE}-${FS_NAME}-${IOR_API}.${TOKIO_JOBID}.out"
     printlog "Completed IOR: ${FS_NAME}-${IOR_API}"
 }
 

@@ -1,11 +1,9 @@
 IOR START
 # common options
-    reorderTasks=1       # -C    reorderTasks -- changes task ordering to n+1 ordering for readback
     fsync=1              # -e    fsync -- perform fsync upon POSIX write close
     intraTestBarriers=1  # -g    intraTestBarriers -- use barriers between open-write/read-close
     repetitions=1        # -i N  repetitions -- number of repetitions of test
     verbose=1            # -v    verbose -- output information (repeating flag increases level)
-### keepFile=1           # -k    keepFile -- don't remove the test file(s) on program exit
 
 # MPIIO shared file tests
 # 1m2 test

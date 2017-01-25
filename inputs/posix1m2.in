@@ -1,17 +1,14 @@
 IOR START
 # common options
-    reorderTasks=1       # -C    reorderTasks -- changes task ordering to n+1 ordering for readback
     fsync=1              # -e    fsync -- perform fsync upon POSIX write close
     intraTestBarriers=1  # -g    intraTestBarriers -- use barriers between open-write/read-close
     repetitions=1        # -i N  repetitions -- number of repetitions of test
     verbose=1            # -v    verbose -- output information (repeating flag increases level)
-### keepFile=1           # -k    keepFile -- don't remove the test file(s) on program exit
 
 # POSIX one-file-per-processor tests
 # 1m2 test
     api=POSIX            # -a S  api --  API for I/O [POSIX|MPIIO|HDF5|NCMPI]
     filePerProc=1        # -F    filePerProc -- file-per-process
-### testFile = multdir/IOR_Posix_1m2 #  -o S  testFile -- full name for test
     segmentCount=1024    # -s N  segmentCount -- number of segments
     blockSize=4194304    # -b N  blockSize -- contiguous bytes to write per task
     transferSize=4194304 # -t N  transferSize -- size of transfer in bytes
