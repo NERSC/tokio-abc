@@ -6,6 +6,7 @@ source /etc/profile.d/00softenv.sh
 
 # set dependencies
 soft add +mpiwrapper-xl.legacy
+export PATH=/soft/perftools/autoperf-20160802/scripts/xl.legacy:${PATH}
 
 JENKINS_WD=$PWD
 PROJ_WD=/projects/radix-io/automated
@@ -13,7 +14,6 @@ day=$(date +"%Y%m%d")
 
 # configure and build
 ./build-cron-benchmarks-mira.sh
-
 
 if [ $? -eq 0 ];
 then
