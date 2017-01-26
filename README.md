@@ -8,8 +8,8 @@ TODO
 
 Benchmark | Nodes | Procs | GiB/proc  | I/O Motif
 ----------|-------|-------|-----------|------------------------------------
-IOR       |  96   | 1536  | 4.0       | POSIX; file per process; write+read
-IOR       |  96   | 1536  | 4.0       | MPI-IO; shared file; write+read
+IOR       |  96   | 1536  | 1.0       | POSIX; file per process; write+read
+IOR       |  96   | 1536  | 1.0       | MPI-IO; shared file; write+read
 HACC-IO   |  96   | 1536  | 0.742     | GLEAN; file per process; write
 HACC-IO   |  96   | 1536  | 0.742     | GLEAN; file per process; read
 VPIC-IO   |  96   | 1536  | 1.0       | pHDF5; shared file; write
