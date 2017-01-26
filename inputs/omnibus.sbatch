@@ -143,7 +143,7 @@ function clean_ior() {
         ### if this is a private DataWarp namespace, we must delete all matches
         ### from all namespaces
         if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-            srun --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
         else
             $rm_exe -rf ${OUT_FILE}*
         fi
@@ -170,7 +170,7 @@ function clean_haccio() {
         ### if this is a private DataWarp namespace, we must delete all matches from
         ### all namespaces
         if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-            srun --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
         else
             $rm_exe -rf ${OUT_FILE}*
         fi
@@ -186,7 +186,7 @@ function run_vpicio() {
 
     mkdir -p "$(dirname "$OUT_FILE")"
     if [[ "$VPIC_EXE" =~ dbscan_read.* ]]; then
-        extra_args="-d '/Step#0/x' -d '/Step#0/y' -d '/Step#0/z' -d '/Step#0/px' -d '/Step#0/py' -d '/Step#0/pz' -f"
+        extra_args="-d /Step#0/x -d /Step#0/y -d /Step#0/z -d /Step#0/px -d /Step#0/py -d /Step#0/pz -f"
     elif [[ "$VPIC_EXE" =~ vpicio_uni.* ]]; then
         extra_args=""
     else
@@ -205,7 +205,7 @@ function clean_vpicio() {
         ### if this is a private DataWarp namespace, we must delete all matches from
         ### all namespaces
         if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-            srun --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
         else
             $rm_exe -rf ${OUT_FILE}*
         fi
