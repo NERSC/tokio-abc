@@ -27,6 +27,7 @@ ior/src/Makefile.in
 ior/src/config.h.in
 
 ### H5Part autoconf cruft
+h5part/Makefile
 h5part/Makefile.in
 h5part/aclocal.m4
 h5part/compile
