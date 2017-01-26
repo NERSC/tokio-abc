@@ -12,6 +12,8 @@ EXTRA_AC_FLAGS="--host=powerpc-bgq-linux"
 HDF5_ROOT=/soft/libraries/hdf5/current/cnk-xl/current/
 ZLIB_ROOT=/soft/libraries/alcf/current/xl/ZLIB
 
+export PATH=/soft/buildtools/autotools/26april2013/gnu/fen/bin:$PATH
+
 # build IOR
 if [ "$target" == "ior" -o "$target" == "all" ]; then
     echo ""
