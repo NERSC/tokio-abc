@@ -8,12 +8,27 @@ TODO
 
 Benchmark | Nodes | Procs | GiB/proc  | I/O Motif
 ----------|-------|-------|-----------|------------------------------------
-IOR       |  96   | 1536  | 1.0       | POSIX; file per process; write+read
-IOR       |  96   | 1536  | 1.0       | MPI-IO; shared file; write+read
+IOR       |  96   | 1536  | 1.0       | POSIX; file per process; write
+IOR       |  96   | 1536  | 1.0       | POSIX; file per process; read
+IOR       |  96   | 1536  | 1.0       | MPI-IO; shared file; write
+IOR       |  96   | 1536  | 1.0       | MPI-IO; shared file; read
 HACC-IO   |  96   | 1536  | 1.0       | GLEAN; file per process; write
 HACC-IO   |  96   | 1536  | 1.0       | GLEAN; file per process; read
 VPIC-IO   |  96   | 1536  | 1.0       | pHDF5; shared file; write
 BDCATS-IO |  96   | 1536  | 1.0       | pHDF5; shared file; read
+
+The following table contains some estimates of how long each benchmark takes.
+
+Benchmark        | Total GiB | escratch1 | escratch2 | escratch 3 | cscratch | dw_lg/s | dw_lg/p |
+-----------------|-----------|-----------|-----------|------------|----------|---------|---------|
+IOR/write/shared | 1536.00   |           |           |            |  108 sec |  35 sec |    -    |
+IOR/read/shared  | 1536.00   |           |           |            |          |         |    -    |
+IOR/write/fpp    | 1536.00   |           |           |            |   11 sec |  N/A    |  11 sec |
+IOR/read/fpp     | 1536.00   |           |           |            |   14 sec |  N/A    |   9 sec |
+HACC-IO/write    | 1572.00   |           |           |            |   11 sec |  14 sec |  13 sec |
+HACC-IO/read     | 1572.00   |           |           |            |   18 sec |  13 sec |  13 sec |
+VPIC-IO          | 1536.00   |           |           |            | 2857 sec |  64 sec |    -    |
+BDCATS-IO        | 1152.02   |           |           |            |  186 sec |  91 sec |    -    |
 
 ## Benchmark Descriptions
 
