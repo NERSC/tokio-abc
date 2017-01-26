@@ -70,7 +70,7 @@ For example,
 
 Each particle is 38 bytes, so the above example will generate a collection of
 output files (one file per process by default), each containing 760 MiB of
-particle data and a small header.
+particle data and a fixed-size (24. MiB) header.
 
 When running the `hacc_io_read` benchmark, specify the same output file path
 (e.g., `$SCRATCH/hacc.dat`) used when running `hacc_io_write`.  HACC-IO will

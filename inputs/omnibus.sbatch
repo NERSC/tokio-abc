@@ -159,7 +159,7 @@ function run_haccio() {
 
     mkdir -p "$(dirname "$OUT_FILE")"
     printlog "Submitting HACC-IO: ${FS_NAME}-${HACC_EXE}"
-    $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 20971520 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
+    $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 28256364 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
     printlog "Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
 }
 
