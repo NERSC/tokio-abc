@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 basedir=$(readlink -f $(dirname "$0"))
 
 if [ "x$1" == "x" ]; then
@@ -63,4 +65,19 @@ if [ "$target" == "hacc-io" -o "$target" == "all" ]; then
     make CXX=CC fpp
     mkdir -p install
     mv -v hacc_io hacc_io_write hacc_io_read hacc_open_close install/
+fi
+
+# cleanup option
+if [ "$target" == "clean" ]; then
+    cat .gitignore | while read line
+    do
+        if [[ $line == "#"* || -z "${line// }" ]]; then
+            continue
+        fi
+        if [[ -e "$line" && $line != ".."* ]]; then
+            rm -rfv ./$line
+        else
+            find ./ -name $line -type f -exec rm -v {} \;
+        fi
+done
 fi
