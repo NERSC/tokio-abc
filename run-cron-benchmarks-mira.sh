@@ -1,9 +1,15 @@
 #!/bin/bash -x
+#COBALT -A radix-io
+#COBALT -n 1024 
+#COBALT -t 30
+#OCBALT --mode script
 
 basedir=$(readlink -f $(dirname "$0"))
 
 ior_exe=${PROJ_WD:-$basedir/ior/install}/bin/ior
 ior_outdir=${PROJ_WD:-/projects/radix-io/snyder}/tmp
+inputdir=${PROJ_WD:-$basedir}/inputs
+error_code=0
 
 function printl() {
     echo "[$(date)] $@"
@@ -12,7 +18,7 @@ function printl() {
 read -r -d '' IOR_PARAM_SETS <<EOF
 # ior_api output_file               nproc
 # ------- ------------------------- -----
-  mpiio   $ior_outdir/ior-mpiio.out 256
+  mpiio   $ior_outdir/ior-mpiio.out 16384
 EOF
 #  posix   $ior_outdir/ior-posix.out 256
 
@@ -30,7 +36,8 @@ function run_ior() {
         $ior_exe -s 128 \
                  -H \
                  -o "$OUT_FILE" \
-                 -f $basedir/inputs/"${IOR_API}1m2.in"
+                 -f ${inputdir}/"${IOR_API}1m2.in"
+    error_code=$((error_code + $?))
     printl "Completed IOR: $IOR_API"
 }
 
@@ -58,3 +65,5 @@ do
     fi
     clean_ior $parameters
 done
+
+return $error_code

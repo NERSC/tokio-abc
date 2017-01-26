@@ -24,6 +24,9 @@ then
     cp ${bin} ${PROJ_WD}/bin/.
   done
 
+  # copy inputs to PFS
+  cp -r inputs ${PROJ_WD}/inputs
+
   # record df
   /usr/lpp/mmfs/bin/mmdf mira-fs1 > ${PROJ_WD}/runs/df_fs1_${day}.txt
   /usr/lpp/mmfs/bin/mmdf mira-fs0 > ${PROJ_WD}/runs/df_fs0_${day}.txt
@@ -33,7 +36,7 @@ then
   /usr/lpp/mmfs/bin/mmlsdisk mira-fs0 > ${PROJ_WD}/runs/disk_status_fs0_${day}.txt
 
   # submit to cobalt
-  jid=$(qsub -A radix-io --cwd ${PROJ_WD}/runs -n 2048 -t 30 --mode script --env JENKINS_WD=${JENKINS_WD}:PROJ_WD=${PROJ_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
+  jid=$(qsub --cwd ${PROJ_WD}/runs --env JENKINS_WD=${JENKINS_WD}:PROJ_WD=${PROJ_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
   rc=$?
   echo "Running as job: $jid"
   if [ $? -eq 0 ]; then
