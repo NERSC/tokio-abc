@@ -45,6 +45,10 @@ export TOKIO_LOGPATH=${TOKIO_LOGPATH:-$TOKIO_JOBDIR}
 export DARSHAN_LOGPATH="$TOKIO_LOGPATH"
 printlog "Darshan logs will go to $DARSHAN_LOGPATH"
 
+### Enable extra verbosity in MPI-IO to get insight into collective buffering
+export MPICH_MPIIO_HINTS_DISPLAY=1
+export MPICH_MPIIO_STATS=1
+
 ### these paths should not require site-specific modification
 ior_exe="${REPO_BASE_DIR}/ior/install/bin/ior"
 hacc_exe_path="${REPO_BASE_DIR}/hacc-io/install"
