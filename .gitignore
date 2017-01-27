@@ -4,6 +4,7 @@ hacc-io/install
 h5part/install
 vpic-io/install
 bdcats-io/install
+bin/
 
 ### Build directories and contents
 ior/build
