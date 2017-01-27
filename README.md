@@ -30,6 +30,24 @@ HACC-IO/read     | 1572.00   |           |           |            |   18 sec |  
 VPIC-IO          | 1536.00   |           |           |            | 2857 sec |  64 sec |    -    |
 BDCATS-IO        | 1152.02   |           |           |            |  186 sec |  91 sec |    -    |
 
+VPIC is giving us problems because of its abnormally long runtime.  The
+majority of the time is spent between the last byte being written and the last
+MPI process completing its POSIX close, so we need to debug this to see if we
+can get the VPIC benchmark time down to a reasonable number.
+
+Per discussion on January 27, we should target a 30 second walltime for each
+benchmark to balance test throughput with LMT data (which is sampled at 5-second
+intervals).  The proposed justification for our choice of benchmarking
+parameters (as Glenn remembers it) would be:
+
+1. determine how many compute nodes on NERSC are required to achieve X% of peak
+   file system performance
+2. choose a dataset size to hit the 30 second interval at this node count
+3. use this dataset size on Mira
+4. figure out how many Mira nodes are required to make this go at a reasonable
+   rate
+5. adjust expectations given the scheduling and size constraints on Mira
+
 ## Benchmark Descriptions
 
 ### IOR
