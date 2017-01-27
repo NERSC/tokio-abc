@@ -10,6 +10,7 @@ export REPO_BASE_DIR=${REPO_BASE_DIR:-$(readlink -f $PWD/..)}
 if [ -z "$SLURM_JOBID" ]; then
     srun_exe="echo srun"
     rm_exe="echo rm"
+    rmdir_exe="echo rmdir"
     mkdir_exe="echo mkdir"
     lfs_exe="echo lfs"
     export TOKIO_JOBID="0000000"
@@ -25,6 +26,7 @@ if [ -z "$SLURM_JOBID" ]; then
 else
     srun_exe="srun"
     rm_exe="rm"
+    rmdir_exe="rmdir"
     mkdir_exe="mkdir"
     lfs_exe="lfs"
     export TOKIO_JOBID="$SLURM_JOBID"
@@ -61,35 +63,12 @@ vpic_exe_path="${REPO_BASE_DIR}"
 ###  Edison  ###################################################################
 
 if [ "$NERSC_HOST" == "edison" -o "$NERSC_HOST" == "edison-mini" -o "$NERSC_HOST" == "edison-micro" ]; then
-    ### Set up a directory with wide striping
-    module load lustre-cray_ari_s
-    for out_dir in "/scratch1/scratchdirs/$USER/striped" \
-                   "/scratch2/scratchdirs/$USER/striped" \
-                   "/scratch3/scratchdirs/$USER/striped"
-    do
-        $mkdir_exe -p $out_dir && $lfs_exe setstripe -c -1 $out_dir
-    done
-    ### Set up a directory with no striping (for file-per-process)
-    for out_dir in "/scratch1/scratchdirs/$USER/nostriped" \
-                   "/scratch2/scratchdirs/$USER/nostriped" \
-                   "/scratch3/scratchdirs/$USER/nostriped"
-    do
-        $mkdir_exe -p $out_dir && $lfs_exe setstripe -c 1 $out_dir
-    done
-
     IOR_PARAMS_FILE="${REPO_BASE_DIR}/inputs/ior-${NERSC_HOST}.params"
     HACCIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/haccio-${NERSC_HOST}.params"
     VPICIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/vpicio-${NERSC_HOST}.params"
 
 ###  Cori  #####################################################################
 elif [ "$NERSC_HOST" == "cori" -o "$NERSC_HOST" == "cori-mini" -o "$NERSC_HOST" == "cori-micro" ]; then
-    ### Set up a directory with wide striping
-    module load lustre-cray_ari_s
-    $mkdir_exe -p $SCRATCH/striped && $lfs_exe setstripe -c -1 $SCRATCH/striped
-
-    ### ...and with no striping
-    $mkdir_exe -p $SCRATCH/nostriped && $lfs_exe setstripe -c 1 $SCRATCH/nostriped
-
     IOR_PARAMS_FILE="${REPO_BASE_DIR}/inputs/ior-${NERSC_HOST}.params"
     HACCIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/haccio-${NERSC_HOST}.params"
     VPICIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/vpicio-${NERSC_HOST}.params"
@@ -108,6 +87,35 @@ fi
 ################################################################################
 ###  Helper functions to read and execute system-specific parameter sets
 ################################################################################
+
+function setup_outdir() {
+    if [ -z "$1" ]; then
+        return 1
+    else
+        out_dir=$1
+    fi
+    if [ -z "$2" ]; then
+        stripe_ct=1
+    else
+        stripe_ct=$2
+    fi
+    ### load lfs module if necessary
+    if ! which lfs >/dev/null 2>&1; then
+        module load lustre-cray_ari_s
+    fi
+
+    if [ -d "$out_dir" ]; then
+        printerr "$out_dir already exists; striping may be affected"
+    else
+        mkdir -p $out_dir || return 1
+    fi
+
+    ### set striping if necessary
+    if lfs getstripe "$out_dir" >/dev/null 2>&1; then
+        $lfs_exe setstripe -c $stripe_ct "$out_dir"
+    fi
+}
+
 function run_ior() {
     FS_NAME="$1"
     IOR_API="$2"
@@ -118,19 +126,18 @@ function run_ior() {
 
     if [ "$READ_OR_WRITE" == "write" ]; then
         IOR_CLI_ARGS="-k -w"
+        setup_outdir "$(dirname "$OUT_FILE")" 1
     elif [ "$READ_OR_WRITE" == "read" ]; then
         IOR_CLI_ARGS="-r"
     else
         printerr "Unknown read-or-write parameter [$READ_OR_WRITE]"
         IOR_CLI_ARGS=""
+        setup_outdir "$(dirname "$OUT_FILE")" 1
         # warn, but attempt to run r+w
     fi
 
-    mkdir -p "$(dirname "$OUT_FILE")"
     printlog "Submitting IOR: ${FS_NAME}-${IOR_API}"
-    MPICH_MPIIO_HINTS="*:romio_cb_read=enable:romio_cb_write=enable"
-    # write-only, keep output files
-    MPICH_MPIIO_HINTS="$MPICH_MPIIO_HINTS" \
+    MPICH_MPIIO_HINTS="*:romio_cb_read=enable:romio_cb_write=enable" \
         $srun_exe -n ${NPROCS} \
          -N ${NNODES} \
          "$ior_exe" -H \
@@ -141,15 +148,16 @@ function run_ior() {
 }
 
 function clean_ior() {
-    OUT_FILE="$3"
+    OUT_FILE="$4"
     if [ ! -z "$OUT_FILE" ]; then
         printlog "Deleting ${OUT_FILE}*"
         ### if this is a private DataWarp namespace, we must delete all matches
         ### from all namespaces
         if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*; rmdir $(dirname $OUT_FILE)"
         else
             $rm_exe -rf ${OUT_FILE}*
+            $rmdir_exe $(dirname $OUT_FILE)
         fi
     fi
 }
@@ -161,7 +169,7 @@ function run_haccio() {
     NNODES="$4"
     NPROCS="$5"
 
-    mkdir -p "$(dirname "$OUT_FILE")"
+    setup_outdir "$(dirname "$OUT_FILE")" 1
     printlog "Submitting HACC-IO: ${FS_NAME}-${HACC_EXE}"
     $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 28256364 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
     printlog "Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
@@ -174,9 +182,10 @@ function clean_haccio() {
         ### if this is a private DataWarp namespace, we must delete all matches from
         ### all namespaces
         if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
+            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*; rmdir $(dirname $OUT_FILE)"
         else
             $rm_exe -rf ${OUT_FILE}*
+            $rmdir_exe $(dirname $OUT_FILE)
         fi
     fi
 }
@@ -188,7 +197,8 @@ function run_vpicio() {
     NNODES="$4"
     NPROCS="$5"
 
-    mkdir -p "$(dirname "$OUT_FILE")"
+    setup_outdir "$(dirname "$OUT_FILE")" -1
+
     if [[ "$VPIC_EXE" =~ dbscan_read.* ]]; then
         extra_args="-d /Step#0/x -d /Step#0/y -d /Step#0/z -d /Step#0/px -d /Step#0/py -d /Step#0/pz -f"
     elif [[ "$VPIC_EXE" =~ vpicio_uni.* ]]; then
@@ -206,13 +216,8 @@ function clean_vpicio() {
     OUT_FILE="$3"
     if [ ! -z "$OUT_FILE" ]; then
         printlog "Deleting ${OUT_FILE}*"
-        ### if this is a private DataWarp namespace, we must delete all matches from
-        ### all namespaces
-        if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_FILE" =~ $DW_JOB_PRIVATE ]]; then
-            $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*"
-        else
-            $rm_exe -rf ${OUT_FILE}*
-        fi
+        $rm_exe -rf ${OUT_FILE}*
+        $rmdir_exe $(dirname $OUT_FILE)
     fi
 }
 
