@@ -25,7 +25,7 @@ then
   done
 
   # copy inputs to PFS
-  cp -r inputs ${PROJ_WD}/inputs
+  cp -r inputs ${PROJ_WD}/.
 
   # record df
   /usr/lpp/mmfs/bin/mmdf mira-fs1 > ${PROJ_WD}/runs/df_fs1_${day}.txt
