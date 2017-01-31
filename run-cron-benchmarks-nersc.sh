@@ -118,21 +118,31 @@ function setup_outdir() {
 
 function run_ior() {
     FS_NAME="$1"
-    IOR_API="$2"
-    READ_OR_WRITE="$3"
+    IOR_API="$(awk '{print tolower($0)}' <<< $2)"
+    READ_OR_WRITE="$(awk '{print tolower($0)}' <<< $3)"
     OUT_FILE="$4"
     NNODES="$5"
     NPROCS="$6"
 
     if [ "$READ_OR_WRITE" == "write" ]; then
         IOR_CLI_ARGS="-k -w"
-        setup_outdir "$(dirname "$OUT_FILE")" 1
+        if [ "$IOR_API" == "posix" ]; then
+            setup_outdir "$(dirname "$OUT_FILE")" 1
+        elif [ "$IOR_API" == "mpiio" ]; then
+            setup_outdir "$(dirname "$OUT_FILE")" -1
+        else
+            printerr "Unknown API [$IOR_API]"
+        fi
     elif [ "$READ_OR_WRITE" == "read" ]; then
         IOR_CLI_ARGS="-r"
     else
         printerr "Unknown read-or-write parameter [$READ_OR_WRITE]"
         IOR_CLI_ARGS=""
-        setup_outdir "$(dirname "$OUT_FILE")" 1
+        if [ "$IOR_API" == "posix" ]; then
+            setup_outdir "$(dirname "$OUT_FILE")" 1
+        elif [ "$IOR_API" == "mpiio" ]; then
+            setup_outdir "$(dirname "$OUT_FILE")" -1
+        fi
         # warn, but attempt to run r+w
     fi
 
@@ -208,7 +218,8 @@ function run_vpicio() {
         extra_args=""
     fi
     printlog "Submitting VPIC-IO: ${FS_NAME}-$(basename ${VPIC_EXE})"
-    $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-$(basename ${VPIC_EXE}).${TOKIO_JOBID}.out"
+    MPICH_MPIIO_HINTS="*:romio_cb_read=disable:romio_cb_write=disable" \
+        $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-$(basename ${VPIC_EXE}).${TOKIO_JOBID}.out"
     printlog "Completed VPIC-IO: ${FS_NAME}-$(basename ${VPIC_EXE})"
 }
 
