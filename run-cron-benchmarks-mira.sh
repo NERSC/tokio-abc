@@ -51,7 +51,7 @@ function run_ior() {
         $IOR_EXE \
             -H \
             $IOR_CLI_ARGS \
-            -s 8 \
+            -s 16 \
             -o "$OUT_FILE" \
             -f "${TOKIO_JOB_DIR}/inputs/${IOR_API}1m2.in"
     ec=$?
