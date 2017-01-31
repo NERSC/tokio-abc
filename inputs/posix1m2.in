@@ -9,7 +9,7 @@ IOR START
 # 1m2 test
     api=POSIX            # -a S  api --  API for I/O [POSIX|MPIIO|HDF5|NCMPI]
     filePerProc=1        # -F    filePerProc -- file-per-process
-    segmentCount=256     # -s N  segmentCount -- number of segments
+#    segmentCount=256     # -s N  segmentCount -- number of segments
     blockSize=4194304    # -b N  blockSize -- contiguous bytes to write per task
     transferSize=4194304 # -t N  transferSize -- size of transfer in bytes
 RUN
