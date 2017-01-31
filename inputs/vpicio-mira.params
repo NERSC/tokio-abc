@@ -1,4 +1,4 @@
 # vpic_exe    output_file                 nproc
 # ----------- --------------------------- -----
-  vpicio_uni  $VPICIO_OUT_DIR/vpicio.hdf5 256
-  dbscan_read $VPICIO_OUT_DIR/vpicio.hdf5 256
+  vpicio_uni  $VPICIO_OUT_DIR/vpicio.hdf5 16384
+  dbscan_read $VPICIO_OUT_DIR/vpicio.hdf5 16384

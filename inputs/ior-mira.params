@@ -1,7 +1,7 @@
 # ior_api r/w   output_file                nproc
 # ------- ----- -------------------------- -----
-  mpiio   write $IOR_OUT_DIR/ior-mpiio.out 256
-  posix   write $IOR_OUT_DIR/ior-posix.out 256
-  mpiio   read  $IOR_OUT_DIR/ior-mpiio.out 256
-  posix   read  $IOR_OUT_DIR/ior-posix.out 256
+  mpiio   write $IOR_OUT_DIR/ior-mpiio.out 16384
+  posix   write $IOR_OUT_DIR/ior-posix.out 16384
+  mpiio   read  $IOR_OUT_DIR/ior-mpiio.out 16384
+  posix   read  $IOR_OUT_DIR/ior-posix.out 16384
 
