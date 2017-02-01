@@ -44,3 +44,4 @@ h5part/src/Makefile.in
 h5part/test-driver
 h5part/test/Makefile.in
 h5part/tools/Makefile.in
+h5part/autom4te.cache/
