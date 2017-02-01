@@ -1,0 +1,4 @@
+# hacc_exe      output_file                nproc
+# ------------- -------------------------- -----
+  hacc_io_write $HACCIO_OUT_DIR/haccio.out 16384
+  hacc_io_read  $HACCIO_OUT_DIR/haccio.out 16384
