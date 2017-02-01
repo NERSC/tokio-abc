@@ -4,8 +4,10 @@
 #
 #SBATCH -J tokio-abc-edison
 #SBATCH -N 96
-#SBATCH -p regular
-#SBATCH -t 02:00:00
+#SBATCH -p debug
+#SBATCH -t 00:30:00
+#SBATCH --mail-user=glock@lbl.gov
+#SBATCH --mail-type=END
 
 i=0
 while [ -d runs.$i ]; do

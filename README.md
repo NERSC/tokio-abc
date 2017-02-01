@@ -19,21 +19,19 @@ BDCATS-IO |  96   | 1536  | 1.0       | pHDF5; shared file; read
 
 The following table contains some estimates of how long each benchmark takes.
 
-Benchmark        | Total GiB | escratch1 | escratch2 | escratch 3 | cscratch | dw_lg/s | dw_lg/p |
------------------|-----------|-----------|-----------|------------|----------|---------|---------|
-IOR/write/shared | 1536.00   |           |           |            |  108 sec |  35 sec |    -    |
-IOR/read/shared  | 1536.00   |           |           |            |          |         |    -    |
-IOR/write/fpp    | 1536.00   |           |           |            |   11 sec |  N/A    |  11 sec |
-IOR/read/fpp     | 1536.00   |           |           |            |   14 sec |  N/A    |   9 sec |
-HACC-IO/write    | 1572.00   |           |           |            |   11 sec |  14 sec |  13 sec |
-HACC-IO/read     | 1572.00   |           |           |            |   18 sec |  13 sec |  13 sec |
-VPIC-IO          | 1536.00   |           |           |            | 2857 sec |  64 sec |    -    |
-BDCATS-IO        | 1152.02   |           |           |            |  186 sec |  91 sec |    -    |
+Benchmark        | Total GiB | escratch1 | escratch2 | escratch3 | cscratch | dw_lg/s | dw_lg/p |
+-----------------|-----------|-----------|-----------|-----------|----------|---------|---------|
+IOR/write/shared |  384.00   |  68.3 sec |  33.3 sec |  33.3 sec |    - sec |   - sec |   - sec |
+IOR/read/shared  |  384.00   |  36.8 sec |  46.6 sec |  36.1 sec |    - sec |   - sec |   - sec |
+IOR/write/fpp    | 1536.00   |  54.0 sec |  48.3 sec |  38.6 sec |    - sec |     N/A |   - sec |
+IOR/read/fpp     | 1536.00   |  40.3 sec |  40.5 sec |  27.2 sec |    - sec |     N/A |   - sec |
+HACC-IO/write    | 1572.00   |  66.1 sec |  66.1 sec |  42.3 sec |   11 sec |  14 sec |  13 sec |
+HACC-IO/read     | 1572.00   |  44.4 sec |  44.3 sec |  28.2 sec |   18 sec |  13 sec |  13 sec |
+VPIC-IO          | 1536.00   |  95.3 sec | 112.1 sec |  95.4 sec |    - sec |   - sec |    -    |
+BDCATS-IO        | 1152.02   |  64.1 sec |  69.9 sec |  45.4 sec |    - sec |   - sec |    -    |
 
-VPIC is giving us problems because of its abnormally long runtime.  The
-majority of the time is spent between the last byte being written and the last
-MPI process completing its POSIX close, so we need to debug this to see if we
-can get the VPIC benchmark time down to a reasonable number.
+VPIC must be run with `MPICH_MPIIO_HINTS='*:romio_cb_write=disable'` to keep its
+walltime low.
 
 Per discussion on January 27, we should target a 30 second walltime for each
 benchmark to balance test throughput with LMT data (which is sampled at 5-second
@@ -112,24 +110,26 @@ use this as the base file name and suffix per-rank identifiers on each file.
 ### VPIC-IO
 
 VPIC-IO is an I/O kernel that emulates the writing of a checkpoint file as
-performed by the [VPIC application][].  It is characterized by 
+performed by the [VPIC application][].  It is characterized by single
+shared-file writes using the HDF5 library and MPI-IO, and it accepts one
+or two command-line arguments:
 
-- single shared-file writes using the HDF5 library and MPI-IO
-- 1 GiB of data per MPI process
-- 128 MiB transactions
+- the path to an output file, and
+- optionally, the number of particles per process in units of 1048576
+
+For example,
+
+    srun -n 1536 ./vpicio_uni $SCRATCH/vpic.hdf5 32
+
+Each particle is 32 bytes (six 32-bit floats and two 32-bit integers), so the
+above example will write out a total of 103,079,215,104 particles (1536
+processes * 64 * 1048576 particles) or 3.000 TiB.  If the second parameter
+is omitted, the default value is 32.  This corresponds to 1.0 GiB per process.
+The benhcmark does not touch any other file systems or `$PWD`.
 
 The VPIC-IO benchmark was written by [Suren Byna] and depends on the
 [H5Part library][].  The H5Part library included in this repository is derived
 from [H5Part 1.6.6][] and requires HDF5 1.8.
-
-The `vpicio_uni` application takes a single command-line argument, which is the
-path to the output file.  For example,
-
-    srun -n 32 ./vpicio_uni $SCRATCH/vpicio.h5part
-
-will run VPIC-IO across 32 processes and write 32 GiB (a fixed 1 GiB/process) to
-`$SCRATCH/vpicio.h5part` (which need not exist).  It does not touch any other
-file systems or `$PWD`.
 
 ### BD-CATS-IO
 
