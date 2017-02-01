@@ -18,20 +18,29 @@ VPIC-IO   |  96   | 1536  | 1.0       | pHDF5; shared file; write
 BDCATS-IO |  96   | 1536  | 1.0       | pHDF5; shared file; read
 
 The following table contains some estimates of how long each benchmark takes.
+**It is determined by whatever timing information is reported by the
+application**.  Specifically:
 
-Benchmark        | Total GiB | escratch1 | escratch2 | escratch3 | cscratch | dw_lg/s | dw_lg/p |
------------------|-----------|-----------|-----------|-----------|----------|---------|---------|
-IOR/write/shared |  384.00   |  68.3 sec |  33.3 sec |  33.3 sec |    - sec |   - sec |   - sec |
-IOR/read/shared  |  384.00   |  36.8 sec |  46.6 sec |  36.1 sec |    - sec |   - sec |   - sec |
-IOR/write/fpp    | 1536.00   |  54.0 sec |  48.3 sec |  38.6 sec |    - sec |     N/A |   - sec |
-IOR/read/fpp     | 1536.00   |  40.3 sec |  40.5 sec |  27.2 sec |    - sec |     N/A |   - sec |
-HACC-IO/write    | 1572.00   |  66.1 sec |  66.1 sec |  42.3 sec |   11 sec |  14 sec |  13 sec |
-HACC-IO/read     | 1572.00   |  44.4 sec |  44.3 sec |  28.2 sec |   18 sec |  13 sec |  13 sec |
-VPIC-IO          | 1536.00   |  95.3 sec | 112.1 sec |  95.4 sec |    - sec |   - sec |    -    |
-BDCATS-IO        | 1152.02   |  64.1 sec |  69.9 sec |  45.4 sec |    - sec |   - sec |    -    |
+- IOR: the `Mean(s)` value reported after `Summary of all tests:`
+- HACC-IO: the `MaxTime[sec]` value
+- VPIC-IO: the `seconds elapsed in opening, writing, closing file` value
+- BDCATS-IO: the `Data read time` value
+
+Benchmark        | Total GiB | escratch1 | escratch2 | escratch3 | cscratch |  dw_lg/s |  dw_lg/p |
+-----------------|-----------|-----------|-----------|-----------|----------|----------|----------|
+IOR/write/shared |  384.00   |  68.3 sec |  33.3 sec |  33.3 sec | 22.1 sec |  8.0 sec |      N/A |
+IOR/read/shared  |  384.00   |  36.8 sec |  46.6 sec |  36.1 sec |    - sec |  7.8 sec |      N/A |
+IOR/write/fpp    | 1536.00   |  54.0 sec |  48.3 sec |  38.6 sec |  7.5 sec |      N/A |  2.0 sec |
+IOR/read/fpp     | 1536.00   |  40.3 sec |  40.5 sec |  27.2 sec | 12.1 sec |      N/A |  1.7 sec |
+HACC-IO/write    | 1572.00   |  66.1 sec |  66.1 sec |  42.3 sec |  7.6 sec |  9.6 sec |  8.6 sec |
+HACC-IO/read     | 1572.00   |  44.4 sec |  44.3 sec |  28.2 sec | 13.4 sec |  8.1 sec |  8.2 sec |
+VPIC-IO          | 1536.00   |  95.3 sec | 112.1 sec |  95.4 sec |  334 sec | 13.3 sec |      N/A |
+BDCATS-IO        | 1152.02   |  64.1 sec |  69.9 sec |  45.4 sec |   28 sec |   24 sec |      N/A |
 
 VPIC must be run with `MPICH_MPIIO_HINTS='*:romio_cb_write=disable'` to keep its
-walltime low.
+walltime low.  Conversely, IOR must be run with
+`MPICH_MPIIO_HINTS='*:romio_cb_write=enable:romio_cb_read=enable'` to ensure the
+shared-file I/Os are sufficiently fast.
 
 Per discussion on January 27, we should target a 30 second walltime for each
 benchmark to balance test throughput with LMT data (which is sampled at 5-second
