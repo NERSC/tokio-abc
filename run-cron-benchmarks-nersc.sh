@@ -156,7 +156,9 @@ function run_ior() {
                     -o "${OUT_FILE}" \
                     -s $SEGMENT_CT \
                     -f "${REPO_BASE_DIR}/inputs/${IOR_API}1m2.in" | tee "${TOKIO_LOGPATH}/ior_${READ_OR_WRITE}-${FS_NAME}-${IOR_API}.${TOKIO_JOBID}.out"
+    ret_val=$?
     printlog "Completed IOR: ${FS_NAME}-${IOR_API}"
+    return $ret_val
 }
 
 function clean_ior() {
@@ -184,7 +186,9 @@ function run_haccio() {
     setup_outdir "$(dirname "$OUT_FILE")" 1
     printlog "Submitting HACC-IO: ${FS_NAME}-${HACC_EXE}"
     $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 28256364 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
+    ret_val=$?
     printlog "Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
+    return ret_val
 }
 
 function clean_haccio() {
@@ -222,7 +226,9 @@ function run_vpicio() {
     printlog "Submitting VPIC-IO: ${FS_NAME}-$(basename ${VPIC_EXE})"
     MPICH_MPIIO_HINTS="*:romio_cb_read=disable:romio_cb_write=disable" \
         $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-$(basename ${VPIC_EXE}).${TOKIO_JOBID}.out"
+    ret_val=$?
     printlog "Completed VPIC-IO: ${FS_NAME}-$(basename ${VPIC_EXE})"
+    return ret_val
 }
 
 function clean_vpicio() {
@@ -233,6 +239,9 @@ function clean_vpicio() {
         $rmdir_exe $(dirname $OUT_FILE)
     fi
 }
+
+### Track exit codes to flag error conditions
+global_ret_val=0
 
 ################################################################################
 ###  IOR - MPI-IO shared-file and POSIX file-per-process
@@ -253,6 +262,7 @@ for parameters in "${PARAM_LINES[@]}"; do
         continue
     fi
     run_ior $parameters
+    ret_val=$?
 done
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
@@ -260,6 +270,7 @@ for parameters in "${PARAM_LINES[@]}"; do
     fi
     clean_ior $parameters
 done
+[ $ret_val -ne 0 ] && global_ret_val=$ret_val
 
 ################################################################################
 ###  HACC-IO - Write and read using GLEAN file-per-process
@@ -280,6 +291,7 @@ for parameters in "${PARAM_LINES[@]}"; do
         continue
     fi
     run_haccio $parameters
+    ret_val=$?
 done
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
@@ -287,6 +299,7 @@ for parameters in "${PARAM_LINES[@]}"; do
     fi
     clean_haccio $parameters
 done
+[ $ret_val -ne 0 ] && global_ret_val=$ret_val
 
 ################################################################################
 ###  VPIC-IO - Write and read using HDF5 shared file (VPIC-IO and BD-CATS-IO)
@@ -307,6 +320,7 @@ for parameters in "${PARAM_LINES[@]}"; do
         continue
     fi
     run_vpicio $parameters
+    ret_val=$?
 done
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
@@ -314,3 +328,6 @@ for parameters in "${PARAM_LINES[@]}"; do
     fi
     clean_vpicio $parameters
 done
+[ $ret_val -ne 0 ] && global_ret_val=$ret_val
+
+exit $ret_val
