@@ -130,7 +130,7 @@ function clean_vpicio() {
 ###  IOR - MPI-IO shared-file and POSIX file-per-process
 ################################################################################
 
-IOR_PARAMS_FILE="${TOKIO_INPUTS_DIR}/ior-mira-mini.params"
+IOR_PARAMS_FILE="${TOKIO_INPUTS_DIR}/ior-mira.params"
 if [ ! -f "$IOR_PARAMS_FILE" ]; then
     printerr "IOR_PARAMS_FILE=[$IOR_PARAMS_FILE] not found"
     IOR_PARAMS_FILE=/dev/null
@@ -159,7 +159,7 @@ done
 ###  HACC-IO - Write and read using GLEAN file-per-process
 ################################################################################
 
-HACCIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/haccio-mira-mini.params"
+HACCIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/haccio-mira.params"
 if [ ! -f "$HACCIO_PARAMS_FILE" ]; then
     printerr "HACCIO_PARAMS_FILE=[$HACCIO_PARAMS_FILE] not found"
     HACCIO_PARAMS_FILE=/dev/null
@@ -188,7 +188,7 @@ done
 ###  VPIC-IO - Write and read using HDF5 shared file (VPIC-IO and BD-CATS-IO)
 ################################################################################
 
-VPICIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/vpicio-mira-mini.params"
+VPICIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/vpicio-mira.params"
 if [ ! -f "$VPICIO_PARAMS_FILE" ]; then
     printerr "VPICIO_PARAMS_FILE=[$VPICIO_PARAMS_FILE] not found"
     VPICIO_PARAMS_FILE=/dev/null
