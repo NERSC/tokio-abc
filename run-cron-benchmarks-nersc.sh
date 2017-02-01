@@ -121,8 +121,9 @@ function run_ior() {
     IOR_API="$(awk '{print tolower($0)}' <<< $2)"
     READ_OR_WRITE="$(awk '{print tolower($0)}' <<< $3)"
     OUT_FILE="$4"
-    NNODES="$5"
-    NPROCS="$6"
+    SEGMENT_CT="$5"
+    NNODES="$6"
+    NPROCS="$7"
 
     if [ "$READ_OR_WRITE" == "write" ]; then
         IOR_CLI_ARGS="-k -w"
@@ -153,6 +154,7 @@ function run_ior() {
          "$ior_exe" -H \
                     $IOR_CLI_ARGS \
                     -o "${OUT_FILE}" \
+                    -s $SEGMENT_CT \
                     -f "${REPO_BASE_DIR}/inputs/${IOR_API}1m2.in" | tee "${TOKIO_LOGPATH}/ior_${READ_OR_WRITE}-${FS_NAME}-${IOR_API}.${TOKIO_JOBID}.out"
     printlog "Completed IOR: ${FS_NAME}-${IOR_API}"
 }

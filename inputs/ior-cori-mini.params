@@ -1,10 +1,10 @@
-# fs_name  ior_api r/w   output_file                                       nnode nproc
-# -------- ------- ----- ------------------------------------------------- ----- -----
-  cscratch mpiio   write /global/cscratch1/sd/$USER/striped/ior.out        16     256 
-  cscratch posix   write /global/cscratch1/sd/$USER/nostriped/ior.out      16     256 
-  dwlg_str mpiio   write $DW_JOB_STRIPED/ior.out                           16     256 
-  dwlg_pri posix   write $DW_JOB_PRIVATE/ior.out                           16     256 
-  cscratch mpiio   read  /global/cscratch1/sd/$USER/striped/ior.out        16     256 
-  cscratch posix   read  /global/cscratch1/sd/$USER/nostriped/ior.out      16     256 
-  dwlg_str mpiio   read  $DW_JOB_STRIPED/ior.out                           16     256 
-  dwlg_pri posix   read  $DW_JOB_PRIVATE/ior.out                           16     256 
+# fs_name  ior_api r/w   output_file                                       segct nnode nproc
+# -------- ------- ----- ------------------------------------------------- ----- ----- -----
+  cscratch mpiio   write /global/cscratch1/sd/$USER/striped/ior.out           64    16   256 
+  cscratch posix   write /global/cscratch1/sd/$USER/nostriped/ior.out        256    16   256 
+  dwlg_str mpiio   write $DW_JOB_STRIPED/ior.out                              64    16   256 
+  dwlg_pri posix   write $DW_JOB_PRIVATE/ior.out                             256    16   256 
+  cscratch mpiio   read  /global/cscratch1/sd/$USER/striped/ior.out           64    16   256 
+  cscratch posix   read  /global/cscratch1/sd/$USER/nostriped/ior.out        256    16   256 
+  dwlg_str mpiio   read  $DW_JOB_STRIPED/ior.out                              64    16   256 
+  dwlg_pri posix   read  $DW_JOB_PRIVATE/ior.out                             256    16   256 
