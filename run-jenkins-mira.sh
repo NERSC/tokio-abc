@@ -12,20 +12,24 @@ JENKINS_WD=$PWD
 PROJ_WD=/projects/radix-io/automated
 day=$(date +"%Y%m%d")
 
+#TODO use new version of darshan
+
 # configure and build
 ./build-cron-benchmarks-mira.sh
+rc=$?
 
-if [ $? -eq 0 ];
+if [ $rc -eq 0 ];
 then
+  # TODO set dashan log directory
 
   # copy binaries to PFS
-  for bin in ior/install/bin/ior;
-  do
-    cp ${bin} ${PROJ_WD}/bin/.
-  done
+  cp -r bin ${PROJ_WD}/.
 
   # copy inputs to PFS
   cp -r inputs ${PROJ_WD}/.
+
+  # clear output directory
+  rm -rf ${PROJ_WD}/tmp/*
 
   # record df
   /usr/lpp/mmfs/bin/mmdf mira-fs1 > ${PROJ_WD}/runs/df_fs1_${day}.txt
@@ -36,27 +40,26 @@ then
   /usr/lpp/mmfs/bin/mmlsdisk mira-fs0 > ${PROJ_WD}/runs/disk_status_fs0_${day}.txt
 
   # submit to cobalt
-  jid=$(qsub --cwd ${PROJ_WD}/runs --env JENKINS_WD=${JENKINS_WD}:PROJ_WD=${PROJ_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
+  jid=$(qsub --cwd ${PROJ_WD}/runs --env TOKIO_JOB_DIR=${PROJ_WD} --run_project ${JENKINS_WD}/run-cron-benchmarks-mira.sh)
   rc=$?
   echo "Running as job: $jid"
-  if [ $? -eq 0 ]; then
+  if [ $rc -eq 0 ]; then
     qstat -lf $jid
     cqwait $jid
     # check error code
-    ec=$(sed -n 's/.* exit code of \([0-9]\); initiating job cleanup and removal/\1/p' ${PROJ_WD}/runs/${jid}.cobaltlog)
+    exit_code=$(sed -n 's/.* exit code of \([0-9]\); initiating job cleanup and removal/\1/p' ${PROJ_WD}/runs/${jid}.cobaltlog)
   fi
-  if [ -n $exit_code  ] && [ "$ec" = "0" ]; then
+  if [ -z $exit_code ] || [ "$exit_code" != "0" ] ; then
+    # return something? if the test script failed
+    rc=1
+    echo "Job failed with: $exit_code"
+  else
     # return zero if the test script returned zero
     rc=0
     echo "Job succeeded: $rc"
-  else
-    # return something? if the test script failed
-    rc=1
-    echo "Job failed with: $ec"
   fi
 else
   # return the failure from the build script
-  rc=$?
   echo "Build failed: $rc"
 fi
 
