@@ -60,28 +60,14 @@ vpic_exe_path="${REPO_BASE_DIR}"
 ###  System-specific input and setup parameters
 ################################################################################
 
-###  Edison  ###################################################################
-
 if [ "$NERSC_HOST" == "edison" -o "$NERSC_HOST" == "edison-mini" -o "$NERSC_HOST" == "edison-micro" ]; then
-    IOR_PARAMS_FILE="${REPO_BASE_DIR}/inputs/ior-${NERSC_HOST}.params"
-    HACCIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/haccio-${NERSC_HOST}.params"
-    VPICIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/vpicio-${NERSC_HOST}.params"
-
-###  Cori  #####################################################################
+    PARAMS_FILE="${REPO_BASE_DIR}/inputs/edison.params"
 elif [ "$NERSC_HOST" == "cori" -o "$NERSC_HOST" == "cori-mini" -o "$NERSC_HOST" == "cori-micro" ]; then
-    IOR_PARAMS_FILE="${REPO_BASE_DIR}/inputs/ior-${NERSC_HOST}.params"
-    HACCIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/haccio-${NERSC_HOST}.params"
-    VPICIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/vpicio-${NERSC_HOST}.params"
-
-###  Undefined #################################################################
+    PARAMS_FILE="${REPO_BASE_DIR}/inputs/cori.params"
 elif [ -z "$NERSC_HOST" ]; then
-    printerr "Undefined NERSC_HOST" >&2
-    exit 1
-
-###  Unknown  ##################################################################
+    printerr "Undefined NERSC_HOST" >&2; exit 1
 else
-    printerr "Unknown NERSC_HOST [$NERSC_HOST]" >&2
-    exit 1
+    printerr "Unknown NERSC_HOST [$NERSC_HOST]" >&2; exit 1
 fi
 
 ################################################################################
@@ -117,6 +103,7 @@ function setup_outdir() {
 }
 
 function run_ior() {
+    shift ### first argument is the benchmark name itself
     FS_NAME="$1"
     IOR_API="$(awk '{print tolower($0)}' <<< $2)"
     READ_OR_WRITE="$(awk '{print tolower($0)}' <<< $3)"
@@ -162,6 +149,7 @@ function run_ior() {
 }
 
 function clean_ior() {
+    shift ### first argument is the benchmark name itself
     OUT_FILE="$4"
     if [ ! -z "$OUT_FILE" ]; then
         printlog "Deleting ${OUT_FILE}*"
@@ -177,6 +165,7 @@ function clean_ior() {
 }
 
 function run_haccio() {
+    shift ### first argument is the benchmark name itself
     FS_NAME="$1"
     HACC_EXE="$2"
     OUT_FILE="$3"
@@ -188,10 +177,11 @@ function run_haccio() {
     $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 28256364 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
     ret_val=$?
     printlog "Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
-    return ret_val
+    return $ret_val
 }
 
 function clean_haccio() {
+    shift ### first argument is the benchmark name itself
     OUT_FILE="$3"
     if [ ! -z "$OUT_FILE" ]; then
         printlog "Deleting ${OUT_FILE}*"
@@ -207,6 +197,7 @@ function clean_haccio() {
 }
 
 function run_vpicio() {
+    shift ### first argument is the benchmark name itself
     FS_NAME="$1"
     VPIC_EXE="$2"
     OUT_FILE="$3"
@@ -228,10 +219,11 @@ function run_vpicio() {
         $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-$(basename ${VPIC_EXE}).${TOKIO_JOBID}.out"
     ret_val=$?
     printlog "Completed VPIC-IO: ${FS_NAME}-$(basename ${VPIC_EXE})"
-    return ret_val
+    return $ret_val
 }
 
 function clean_vpicio() {
+    shift ### first argument is the benchmark name itself
     OUT_FILE="$3"
     if [ ! -z "$OUT_FILE" ]; then
         printlog "Deleting ${OUT_FILE}*"
@@ -240,94 +232,60 @@ function clean_vpicio() {
     fi
 }
 
-### Track exit codes to flag error conditions
+################################################################################
+### Begin running benchmarks
+################################################################################
+
+if [ ! -f "$PARAMS_FILE" ]; then
+    printerr "PARAMS_FILE=[$PARAMS_FILE] not found"
+    exit 1
+fi
+
+### Load contents of parameters file into an array
+PARAM_LINES=()
+while read -r parameters; do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
+        continue
+    fi
+    PARAM_LINES+=("$parameters")
+done <<< "$(envsubst < "$PARAMS_FILE")"
+
+### Dispatch benchmarks for each line in the parameters file
 global_ret_val=0
+for parameters in "${PARAM_LINES[@]}"; do
+    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
+        continue
+    fi
+    benchmark=$(awk '{print $1}' <<< $parameters)
+    if [ "$benchmark" == "ior" ]; then
+        run_ior $parameters
+        ret_val=$?
+    elif [ "$benchmark" == "haccio" -o "$benchmark" == "hacc-io" ]; then
+        run_haccio $parameters
+        ret_val=$?
+    elif [ "$benchmark" == "vpicio" -o "$benchmark" == "vpic-io" ]; then
+        run_vpicio $parameters
+        ret_val=$?
+    fi
+    [ $ret_val -ne 0 ] && global_ret_val=$ret_val
+done
 
-################################################################################
-###  IOR - MPI-IO shared-file and POSIX file-per-process
-################################################################################
-if [ ! -f "$IOR_PARAMS_FILE" ]; then
-    printerr "IOR_PARAMS_FILE=[$IOR_PARAMS_FILE] not found"
-    IOR_PARAMS_FILE=/dev/null
-fi
-PARAM_LINES=()
-while read -r parameters; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    PARAM_LINES+=("$parameters")
-done <<< "$(envsubst < "$IOR_PARAMS_FILE")"
+### Dispatch cleaning process for each line in the parameters file
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
-    run_ior $parameters
-    ret_val=$?
-done
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
+    benchmark=$(awk '{print $1}' <<< $parameters)
+    if [ "$benchmark" == "ior" ]; then
+        clean_ior $parameters
+        ret_val=$?
+    elif [ "$benchmark" == "haccio" -o "$benchmark" == "hacc-io" ]; then
+        clean_haccio $parameters
+        ret_val=$?
+    elif [ "$benchmark" == "vpicio" -o "$benchmark" == "vpic-io" ]; then
+        clean_vpicio $parameters
+        ret_val=$?
     fi
-    clean_ior $parameters
 done
-[ $ret_val -ne 0 ] && global_ret_val=$ret_val
 
-################################################################################
-###  HACC-IO - Write and read using GLEAN file-per-process
-################################################################################
-if [ ! -f "$HACCIO_PARAMS_FILE" ]; then
-    printerr "HACCIO_PARAMS_FILE=[$HACCIO_PARAMS_FILE] not found"
-    HACCIO_PARAMS_FILE=/dev/null
-fi
-PARAM_LINES=()
-while read -r parameters; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    PARAM_LINES+=("$parameters")
-done <<< "$(envsubst < "$HACCIO_PARAMS_FILE")"
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    run_haccio $parameters
-    ret_val=$?
-done
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    clean_haccio $parameters
-done
-[ $ret_val -ne 0 ] && global_ret_val=$ret_val
-
-################################################################################
-###  VPIC-IO - Write and read using HDF5 shared file (VPIC-IO and BD-CATS-IO)
-################################################################################
-if [ ! -f "$VPICIO_PARAMS_FILE" ]; then
-    printerr "VPICIO_PARAMS_FILE=[$VPICIO_PARAMS_FILE] not found"
-    VPICIO_PARAMS_FILE=/dev/null
-fi
-PARAM_LINES=()
-while read -r parameters; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    PARAM_LINES+=("$parameters")
-done <<< "$(envsubst < "$VPICIO_PARAMS_FILE")"
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    run_vpicio $parameters
-    ret_val=$?
-done
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    clean_vpicio $parameters
-done
-[ $ret_val -ne 0 ] && global_ret_val=$ret_val
-
-exit $ret_val
+exit $global_ret_val

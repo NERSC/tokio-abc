@@ -1,0 +1,33 @@
+################################################################################
+### IOR
+################################################################################
+# benchmark fs_name  ior_api r/w   output_file                                       segct nnode nproc
+# --------- -------- ------- ----- ------------------------------------------------- ----- ----- -----
+  ior       cscratch mpiio   write /global/cscratch1/sd/$USER/striped/ior.out           64    96  1536
+  ior       cscratch posix   write /global/cscratch1/sd/$USER/nostriped/ior.out        256    96  1536
+  ior       dwlg_str mpiio   write $DW_JOB_STRIPED/ior.out                              64    96  1536
+  ior       dwlg_pri posix   write $DW_JOB_PRIVATE/ior.out                              64    96  1536
+  ior       cscratch mpiio   read  /global/cscratch1/sd/$USER/striped/ior.out          256    96  1536
+  ior       cscratch posix   read  /global/cscratch1/sd/$USER/nostriped/ior.out        256    96  1536
+  ior       dwlg_str mpiio   read  $DW_JOB_STRIPED/ior.out                              64    96  1536
+  ior       dwlg_pri posix   read  $DW_JOB_PRIVATE/ior.out                              64    96  1536
+################################################################################
+### HACC-IO
+################################################################################
+# benchmark fs_name  hacc_exe      output_file                                     nnode nproc
+# --------- -------- ------------  ----------------------------------------------- ----- -----
+  haccio    cscratch hacc_io_write /global/cscratch1/sd/$USER/nostriped/haccio.out 96    1536
+  haccio    dwlg_str hacc_io_write $DW_JOB_STRIPED/haccio.out                      96    1536
+  haccio    dwlg_pri hacc_io_write $DW_JOB_PRIVATE/haccio.out                      96    1536
+  haccio    cscratch hacc_io_read  /global/cscratch1/sd/$USER/nostriped/haccio.out 96    1536
+  haccio    dwlg_str hacc_io_read  $DW_JOB_STRIPED/haccio.out                      96    1536
+  haccio    dwlg_pri hacc_io_read  $DW_JOB_PRIVATE/haccio.out                      96    1536
+################################################################################
+### VPIC-IO / BD-CATS-IO
+################################################################################
+# benchmark fs_name  vpic_exe                       output_file                                     nnod nproc
+# --------- -------- ------------------------------ ----------------------------------------------- ---- -----
+  vpicio    cscratch vpic-io/install/vpicio_uni     /global/cscratch1/sd/$USER/striped/vpicio.hdf5  96   1536
+  vpicio    dwlg_str vpic-io/install/vpicio_uni     $DW_JOB_STRIPED/vpicio.hdf5                     96   1536
+  vpicio    cscratch bdcats-io/install/dbscan_read  /global/cscratch1/sd/$USER/striped/vpicio.hdf5  96   1536
+  vpicio    dwlg_str bdcats-io/install/dbscan_read  $DW_JOB_STRIPED/vpicio.hdf5                     96   1536
