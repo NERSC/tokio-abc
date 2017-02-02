@@ -213,4 +213,4 @@ for parameters in "${PARAM_LINES[@]}"; do
     clean_vpicio $parameters
 done
 
-return $error_code
+exit $error_code
