@@ -30,6 +30,7 @@ function init_ior_tests() {
 }
 
 function run_ior() {
+    shift ### first argument is the benchmark name itself
     IOR_API="$1"
     READ_OR_WRITE="$2"
     OUT_FILE="$3"
@@ -84,6 +85,7 @@ function init_haccio_tests() {
 }
 
 function run_haccio() {
+    shift ### first argument is the benchmark name itself
     HACC_EXE="$1"
     OUT_FILE="$2"
     NPROCS="$3"
@@ -109,6 +111,7 @@ function init_vpicio_tests() {
 }
 
 function run_vpicio() {
+    shift ### first argument is the benchmark name itself
     VPIC_EXE="$1"
     OUT_FILE="$2"
     NPROCS="$3"
@@ -137,84 +140,47 @@ function cleanup_vpicio_tests() {
 }
 
 ################################################################################
-###  IOR - MPI-IO shared-file and POSIX file-per-process
+### Begin running benchmarks
 ################################################################################
 
+PARAMS_FILE="${TOKIO_INPUTS_DIR}/mira.params"
+if [ ! -f "$PARAMS_FILE" ]; then
+    printerr "PARAMS_FILE=[$PARAMS_FILE] not found"
+    exit 1
+fi
+
+### Initialize test environments
 init_ior_tests
-
-IOR_PARAMS_FILE="${TOKIO_INPUTS_DIR}/ior-mira.params"
-if [ ! -f "$IOR_PARAMS_FILE" ]; then
-    printerr "IOR_PARAMS_FILE=[$IOR_PARAMS_FILE] not found"
-    IOR_PARAMS_FILE=/dev/null
-fi
-PARAM_LINES=()
-while read -r parameters; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    PARAM_LINES+=("$parameters")
-done <<< "$(TOKIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$IOR_PARAMS_FILE")"
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    run_ior $parameters
-done
-
-cleanup_ior_tests
-
-################################################################################
-###  HACC-IO - Write and read using GLEAN file-per-process
-################################################################################
-
 init_haccio_tests
-
-HACCIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/haccio-mira.params"
-if [ ! -f "$HACCIO_PARAMS_FILE" ]; then
-    printerr "HACCIO_PARAMS_FILE=[$HACCIO_PARAMS_FILE] not found"
-    HACCIO_PARAMS_FILE=/dev/null
-fi
-PARAM_LINES=()
-while read -r parameters; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    PARAM_LINES+=("$parameters")
-done <<< "$(TOKIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$HACCIO_PARAMS_FILE")"
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    run_haccio $parameters
-done
-
-cleanup_haccio_tests
-
-################################################################################
-###  VPIC-IO - Write and read using HDF5 shared file (VPIC-IO and BD-CATS-IO)
-################################################################################
-
 init_vpicio_tests
 
-VPICIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/vpicio-mira.params"
-if [ ! -f "$VPICIO_PARAMS_FILE" ]; then
-    printerr "VPICIO_PARAMS_FILE=[$VPICIO_PARAMS_FILE] not found"
-    VPICIO_PARAMS_FILE=/dev/null
-fi
+### Load contents of parameters file into an array
 PARAM_LINES=()
 while read -r parameters; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
     PARAM_LINES+=("$parameters")
-done <<< "$(TOKIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$VPICIO_PARAMS_FILE")"
+done <<< "$(TOKIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$PARAMS_FILE")"
+
+### Dispatch benchmarks for each line in the parameters file
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
-    run_vpicio $parameters
+    benchmark=$(awk '{print $1}' <<< $parameters)
+    if [ "$benchmark" == "ior" ]; then
+        run_ior $parameters
+    elif [ "$benchmark" == "haccio" -o "$benchmark" == "hacc-io" ]; then
+        run_haccio $parameters
+    elif [ "$benchmark" == "vpicio" -o "$benchmark" == "vpic-io" ]; then
+        run_vpicio $parameters
+    fi
 done
 
+### Cleanup test environments
+cleanup_ior_tests
+cleanup_haccio_tests
 cleanup_vpicio_tests
 
 exit $error_code

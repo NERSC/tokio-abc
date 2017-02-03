@@ -1,4 +1,0 @@
-# vpic_exe    output_file                         nproc
-# ----------- ----------------------------------- -----
-  vpicio_uni  $TOKIO_OUT_DIR/vpic-io/vpic-io.hdf5 16384
-  dbscan_read $TOKIO_OUT_DIR/vpic-io/vpic-io.hdf5 16384

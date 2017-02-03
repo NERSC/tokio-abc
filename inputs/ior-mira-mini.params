@@ -1,7 +1,0 @@
-# ior_api r/w   output_file                      segct nproc
-# ------- ----- -------------------------------- ----- -----
-  mpiio   write $TOKIO_OUT_DIR/ior/ior-mpiio.out 16    256
-  posix   write $TOKIO_OUT_DIR/ior/ior-posix.out 16    256
-  mpiio   read  $TOKIO_OUT_DIR/ior/ior-mpiio.out 16    256
-  posix   read  $TOKIO_OUT_DIR/ior/ior-posix.out 16    256
-
