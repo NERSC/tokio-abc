@@ -92,7 +92,7 @@ function clean_haccio() {
     OUT_FILE="$2"
     if [ ! -z "$OUT_FILE" ]; then
         printlog "Deleting ${OUT_FILE}*"
-        rm -rf ${OUT_FILE}
+        rm -rf ${OUT_FILE}*
     fi
 }
 
