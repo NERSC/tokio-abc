@@ -62,7 +62,6 @@ if [ "$target" == "vpic-io" -o "$target" == "all" ]; then
     module load cray-hdf5-parallel ### assume HDF5 1.8 or higher
     cd "${basedir}/vpic-io"
     sed -e 's@^H5PART_ROOT *=.*$@H5PART_ROOT='"${basedir}/h5part/install"'@' Makefile.in > Makefile
-    export VPIC_CFLAGS="-D__LUSTRE_FS"
     make dynamic || exit 1
     mkdir -p install
     mv -v vpicio_uni vpicio_uni_dyn install/

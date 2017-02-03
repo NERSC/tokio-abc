@@ -183,11 +183,7 @@ int main (int argc, char* argv[])
 	timer_on (0);
 	//file = H5PartOpenFileParallelAlign(file_name, H5PART_WRITE, MPI_COMM_WORLD, alignf);
 	// file = H5PartOpenFileParallel (file_name, H5PART_WRITE | H5PART_VFD_MPIPOSIX | H5PART_FS_LUSTRE, MPI_COMM_WORLD);
-#ifdef __LUSTRE_FS
 	file = H5PartOpenFileParallel (file_name, H5PART_WRITE | H5PART_FS_LUSTRE, MPI_COMM_WORLD);
-#else
-	file = H5PartOpenFileParallel (file_name, H5PART_WRITE, MPI_COMM_WORLD);
-#endif
 
 	if (my_rank == 0)
 	{
