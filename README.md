@@ -57,7 +57,7 @@ parameters (as Glenn remembers it) would be:
 
 ## Test Matrix (ALCF-Mira)
 
-Benchmark | Nodes | Procs | MiB/proc  | I/O time | I/O Motif
+Benchmark | Nodes | Procs | MiB/proc  | I/O Motif
 ----------|-------|-------|-----------|------------------------------------
 IOR       |  1024 | 16384 | 64.0      | POSIX; file per process; write
 IOR       |  1024 | 16384 | 64.0      | POSIX; file per process; read
