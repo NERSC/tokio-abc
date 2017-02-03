@@ -285,7 +285,7 @@ void read_driver (char *filename, Points *pts, MPI_Comm comm, MPI_Info info, int
 		// Read all the points first; after reading, select the top percent 
                 pts->m_num_local_points = (pts->m_num_global_points/mpi_size + last_process_extra_pts);
 		#ifdef _BDATS_DEBUG_
-		    printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
+		    //printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
 		#endif
         }
         else
@@ -293,7 +293,7 @@ void read_driver (char *filename, Points *pts, MPI_Comm comm, MPI_Info info, int
 		// Read all the points first; after reading, select the top percent 
                 pts->m_num_local_points = (pts->m_num_global_points/mpi_size);
 		#ifdef _BDATS_DEBUG_
-		    printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
+		    //printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
 		#endif
         }
 
@@ -358,7 +358,7 @@ void read_driver (char *filename, Points *pts, MPI_Comm comm, MPI_Info info, int
 		// The number of random points is a percent of total points on an MPI process
 		int64_t num_random_points = pts->m_num_local_points * (percent/100.0);
 		#ifdef _BDATS_DEBUG_
-			printf ("MPI Rank: %d --> number of random points: %lld \n", mpi_rank, num_random_points);
+			//printf ("MPI Rank: %d --> number of random points: %lld \n", mpi_rank, num_random_points);
 		#endif
 
 		// Allocate memory for location of random points
@@ -381,7 +381,7 @@ void read_driver (char *filename, Points *pts, MPI_Comm comm, MPI_Info info, int
 
 		int64_t global_offset = (pts->m_num_global_points/mpi_size) * mpi_rank; 
 		#ifdef _BDATS_DEBUG_
-			printf ("MPI Rank: %d --> global_offset: %lld \n", mpi_rank, global_offset);
+			//printf ("MPI Rank: %d --> global_offset: %lld \n", mpi_rank, global_offset);
 		#endif
 	
 		// Generate unique random numbers between 0 and pts->m_num_local_points range.
@@ -431,7 +431,7 @@ void read_driver (char *filename, Points *pts, MPI_Comm comm, MPI_Info info, int
 		// Set the number of pts->m_num_local_points to be equal to the number of random points
 		pts->m_num_local_points = num_random_points;
 		#ifdef _BDATS_DEBUG_
-			printf ("MPI Rank: %d --> pts->m_num_local_points: %lld \n", mpi_rank, pts->m_num_local_points);
+			//printf ("MPI Rank: %d --> pts->m_num_local_points: %lld \n", mpi_rank, pts->m_num_local_points);
 		#endif
 
 		// Free the random_locations and random_loc_seen memory
@@ -517,7 +517,7 @@ void read_driver (char *filename, Points *pts, MPI_Comm comm, MPI_Info info, int
 		// Read only the top given percentage of points
                 pts->m_num_local_points = (pts->m_num_global_points/mpi_size + last_process_extra_pts) * (percent/100.0);
 		#ifdef _BDATS_DEBUG_
-		    printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
+		    //printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
 		#endif
         }
         else
@@ -525,7 +525,7 @@ void read_driver (char *filename, Points *pts, MPI_Comm comm, MPI_Info info, int
 		// Read only the top given percentage of points
                 pts->m_num_local_points = (pts->m_num_global_points/mpi_size) * (percent/100.0);
 		#ifdef _BDATS_DEBUG_
-		    printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
+		    //printf ("MPI_Rank: %d --> m_num_local_points %lld \n", mpi_rank, pts->m_num_local_points); 
 		#endif
         }
 
