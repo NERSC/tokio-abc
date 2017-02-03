@@ -28,7 +28,8 @@ function run_ior() {
     IOR_API="$1"
     READ_OR_WRITE="$2"
     OUT_FILE="$3"
-    NPROCS="$4"
+    SEGMENT_CT="$4"
+    NPROCS="$5"
 
     if [ "$READ_OR_WRITE" == "write" ]; then
         IOR_CLI_ARGS="-k -w"
@@ -51,7 +52,7 @@ function run_ior() {
         $TOKIO_BIN_DIR/ior \
             -H \
             $IOR_CLI_ARGS \
-            -s 16 \
+            -s $SEGMENT_CT \
             -o $OUT_FILE \
             -f ${TOKIO_INPUTS_DIR}/${IOR_API}1m2.in
     ec=$?
@@ -213,4 +214,4 @@ for parameters in "${PARAM_LINES[@]}"; do
     clean_vpicio $parameters
 done
 
-return $error_code
+exit $error_code
