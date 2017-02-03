@@ -38,7 +38,7 @@ RestartIO_GLEAN::RestartIO_GLEAN () :
     m_headerSize = FILE_HEADER_SIZE_MAX;
     
     #ifdef __bgq__
-    m_fileDist = GLEAN_BGQ_ION_PART;
+    //m_fileDist = GLEAN_BGQ_ION_PART;
     //m_interface = USE_POSIX;
     #endif
 
