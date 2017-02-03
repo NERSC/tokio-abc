@@ -55,6 +55,44 @@ parameters (as Glenn remembers it) would be:
    rate
 5. adjust expectations given the scheduling and size constraints on Mira
 
+## Test Matrix (ALCF-Mira)
+
+Benchmark | Nodes | Procs | MiB/proc  | I/O time | I/O Motif
+----------|-------|-------|-----------|------------------------------------
+IOR       |  1024 | 16384 | 64.0      | POSIX; file per process; write
+IOR       |  1024 | 16384 | 64.0      | POSIX; file per process; read
+IOR       |  1024 | 16384 | 64.0      | MPI-IO; shared file; write
+IOR       |  1024 | 16384 | 64.0      | MPI-IO; shared file; read
+HACC-IO   |  1024 | 16384 | ~128.0    | GLEAN; file per process; write
+HACC-IO   |  1024 | 16384 | ~128.0    | GLEAN; file per process; read
+VPIC-IO   |  1024 | 16384 | 56.0      | pHDF5; shared file; write
+BDCATS-IO |  1024 | 16384 | 48.0      | pHDF5; shared file; read
+
+The following table contains some estimates of how long each benchmark takes
+to run on the mira-fs1 GPFS volume.
+**It is determined by whatever timing information is reported by the
+application**.  Specifically:
+
+- IOR: the `Mean(s)` value reported after `Summary of all tests:`
+- HACC-IO: the `MaxTime[sec]` value
+- VPIC-IO: the `seconds elapsed in opening, writing, closing file` value
+- BDCATS-IO: the `Data read time` value
+
+NOTES:
+ * No HACC-IO results just yet -- was accidentally running these in BG/Q subfile mode instead of FPP.
+ * BDCATS-IO results are estimated using job scheduler timing info -- debug output wasn't enabled, so no timing output by the app.
+
+Benchmark        | Total GiB | I/O time  | I/O b/w      |
+-----------------|-----------|-----------|--------------|
+IOR/write/shared |  1024.00  |  ~2 min   | ~12.5 GiB/s  |
+IOR/read/shared  |  1024.00  |  ~2 min   | ~11.5 GiB/s  |
+IOR/write/fpp    |  1024.00  |  ~2 min   | ~14.0 GiB/s  |
+IOR/read/fpp     |  1024.00  |  ~2 min   | ~18.0 GiB/s  |
+HACC-IO/write    | ~2048.00  |     N/A   |         N/A  |
+HACC-IO/read     | ~2048.00  |     N/A   |         N/A  |
+VPIC-IO          |   896.00  |  ~1 min   | ~21.5 GiB/s  |
+BDCATS-IO        |   768.00  | ~30 sec   | ~25.0 GiB/s  |
+
 ## Benchmark Descriptions
 
 ### IOR
