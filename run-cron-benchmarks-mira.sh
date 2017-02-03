@@ -24,6 +24,11 @@ export MPICH_MPIIO_HINTS="*:romio_cb_read=enable:romio_cb_write=enable"
 ###  Helper functions to read and execute system-specific parameter sets
 ################################################################################
 
+function init_ior_tests() {
+    printlog "Initializing IOR tests"
+    mkdir -p $TOKIO_OUT_DIR/ior
+}
+
 function run_ior() {
     IOR_API="$1"
     READ_OR_WRITE="$2"
@@ -65,13 +70,18 @@ function run_ior() {
     fi
 }
 
-function clean_ior() {
-    OUT_FILE="$3"
-    # no cleanup necessary due to IOR's keepFile option being disabled
+function cleanup_ior_tests() {
+    printlog "Cleaning up IOR tests"
+    rm -rf $TOKIO_OUT_DIR/ior
 }
 
 # this many particles yields ~128 MiB/process
 HACC_NUM_PARTICLES=3532026
+
+function init_haccio_tests() {
+    printlog "Initializing HACC-IO tests"
+    mkdir -p $TOKIO_OUT_DIR/hacc-io
+}
 
 function run_haccio() {
     HACC_EXE="$1"
@@ -88,12 +98,14 @@ function run_haccio() {
     printlog "Completed HACC-IO: ${HACC_EXE} [ec=$ec]"
 }
 
-function clean_haccio() {
-    OUT_FILE="$2"
-    if [ ! -z "$OUT_FILE" ]; then
-        printlog "Deleting ${OUT_FILE}*"
-        rm -rf ${OUT_FILE}*
-    fi
+function cleanup_haccio_tests() {
+    printlog "Cleaning up HACC-IO tests"
+    rm -rf $TOKIO_OUT_DIR/hacc-io
+}
+
+function init_vpicio_tests() {
+    printlog "Initializing VPIC-IO tests"
+    mkdir -p $TOKIO_OUT_DIR/vpic-io
 }
 
 function run_vpicio() {
@@ -119,17 +131,16 @@ function run_vpicio() {
     printlog "Completed VPIC-IO: $VPIC_EXE [ec=$ec]"
 }
 
-function clean_vpicio() {
-    OUT_FILE="$2"
-    if [ ! -z "$OUT_FILE" ]; then
-        printlog "Deleting ${OUT_FILE}"
-        rm -rf ${OUT_FILE}
-    fi
+function cleanup_vpicio_tests() {
+    printlog "Cleaning up VPIC-IO tests"
+    rm -rf $TOKIO_OUT_DIR/vpic-io
 }
 
 ################################################################################
 ###  IOR - MPI-IO shared-file and POSIX file-per-process
 ################################################################################
+
+init_ior_tests
 
 IOR_PARAMS_FILE="${TOKIO_INPUTS_DIR}/ior-mira.params"
 if [ ! -f "$IOR_PARAMS_FILE" ]; then
@@ -142,23 +153,21 @@ while read -r parameters; do
         continue
     fi
     PARAM_LINES+=("$parameters")
-done <<< "$(IOR_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$IOR_PARAMS_FILE")"
+done <<< "$(TOKIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$IOR_PARAMS_FILE")"
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
     run_ior $parameters
 done
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    clean_ior $parameters
-done
+
+cleanup_ior_tests
 
 ################################################################################
 ###  HACC-IO - Write and read using GLEAN file-per-process
 ################################################################################
+
+init_haccio_tests
 
 HACCIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/haccio-mira.params"
 if [ ! -f "$HACCIO_PARAMS_FILE" ]; then
@@ -171,23 +180,21 @@ while read -r parameters; do
         continue
     fi
     PARAM_LINES+=("$parameters")
-done <<< "$(HACCIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$HACCIO_PARAMS_FILE")"
+done <<< "$(TOKIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$HACCIO_PARAMS_FILE")"
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
     run_haccio $parameters
 done
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    clean_haccio $parameters
-done
+
+cleanup_haccio_tests
 
 ################################################################################
 ###  VPIC-IO - Write and read using HDF5 shared file (VPIC-IO and BD-CATS-IO)
 ################################################################################
+
+init_vpicio_tests
 
 VPICIO_PARAMS_FILE="${TOKIO_INPUTS_DIR}/vpicio-mira.params"
 if [ ! -f "$VPICIO_PARAMS_FILE" ]; then
@@ -200,18 +207,14 @@ while read -r parameters; do
         continue
     fi
     PARAM_LINES+=("$parameters")
-done <<< "$(VPICIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$VPICIO_PARAMS_FILE")"
+done <<< "$(TOKIO_OUT_DIR="${TOKIO_OUT_DIR}" envsubst < "$VPICIO_PARAMS_FILE")"
 for parameters in "${PARAM_LINES[@]}"; do
     if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
         continue
     fi
     run_vpicio $parameters
 done
-for parameters in "${PARAM_LINES[@]}"; do
-    if [ -z "$parameters" ] || [[ "$parameters" =~ ^# ]]; then
-        continue
-    fi
-    clean_vpicio $parameters
-done
+
+cleanup_vpicio_tests
 
 exit $error_code
