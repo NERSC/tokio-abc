@@ -1,7 +1,7 @@
 #!/bin/bash -x
 #COBALT -A radix-io
 #COBALT -n 1024
-#COBALT -t 30
+#COBALT -t 60
 #COBALT --mode script
 
 TOKIO_JOB_DIR=${TOKIO_JOB_DIR:-$(readlink -f $PWD/..)}
