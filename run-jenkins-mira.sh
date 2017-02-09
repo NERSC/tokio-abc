@@ -59,6 +59,8 @@ then
     rc=0
     echo "Job succeeded: $rc"
   fi
+
+  cat ${PROJ_WD}/runs/${jid}.cobaltlog
 else
   # return the failure from the build script
   echo "Build failed: $rc"
