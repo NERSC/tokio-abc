@@ -6,13 +6,16 @@ source /etc/profile.d/00softenv.sh
 
 # set dependencies
 soft add +mpiwrapper-xl.legacy
-export PATH=/soft/perftools/autoperf-20160802/scripts/xl.legacy:${PATH}
+export PATH=/bgsys/drivers/V1R2M2/ppc64/comm/bin/xl.legacy:${PATH}
 
 JENKINS_WD=$PWD
 PROJ_WD=/projects/radix-io/automated
 day=$(date +"%Y%m%d")
 
-#TODO use new version of darshan
+# use Darshan 3.1.3 install
+DARSHAN3_ROOT=/projects/radix-io/soft/darshan/darshan-3.1.3-pre/install
+export MPICC_PROFILE=${DARSHAN3_ROOT}/share/mpi-profile/darshan-bg-cc
+export MPICXX_PROFILE=${DARSHAN3_ROOT}/share/mpi-profile/darshan-bg-cxx
 
 # configure and build
 ./build-cron-benchmarks-mira.sh
@@ -20,8 +23,6 @@ rc=$?
 
 if [ $rc -eq 0 ];
 then
-  # TODO set dashan log directory
-
   # copy binaries to PFS
   cp -r bin ${PROJ_WD}/.
 
