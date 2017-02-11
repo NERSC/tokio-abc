@@ -18,7 +18,7 @@ echo "[$(date)] Outputting to runs.$i"
 export REPO_BASE_DIR="${SLURM_SUBMIT_DIR}"
 export TOKIO_LOGPATH="${SLURM_SUBMIT_DIR}/runs.$i"
 export DARSHAN_LOGPATH="${TOKIO_LOGPATH}"
-export TOKIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/edison-escratch2.params"
+export TOKIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/edison-scratch2.params"
 
 mkdir -p "$TOKIO_LOGPATH" && cd "$TOKIO_LOGPATH"
 ../run-cron-benchmarks-nersc.sh

@@ -28,7 +28,7 @@ application**.  Specifically:
 
 **Edison:**
 
-Benchmark        | Total GiB | escratch1 | escratch2 | escratch3
+Benchmark        | Total GiB |  scratch1 |  scratch2 |  scratch3
 -----------------|-----------|-----------|-----------|----------
 IOR/write/shared |  512.00   | 142.8 sec |       sec |       sec
 IOR/read/shared  |  512.00   | 107.4 sec |       sec |       sec
