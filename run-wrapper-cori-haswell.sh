@@ -3,7 +3,7 @@
 # This submit script is intended to be submitted from the repository's base dir.
 #
 #SBATCH -J tokio-abc-cori-haswell
-#SBATCH -N 96
+#SBATCH -N 32
 #SBATCH -p debug
 #SBATCH -t 00:30:00
 #SBATCH -C haswell
@@ -21,7 +21,7 @@ echo "[$(date)] Outputting to runs.$i"
 export REPO_BASE_DIR="${SLURM_SUBMIT_DIR}"
 export TOKIO_LOGPATH="${SLURM_SUBMIT_DIR}/runs.$i"
 export DARSHAN_LOGPATH="${TOKIO_LOGPATH}"
-export TOKIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/${NERSC_HOST}.params"
+export TOKIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/cori-haswell.params"
 
 mkdir -p "$TOKIO_LOGPATH" && cd "$TOKIO_LOGPATH"
 ../run-cron-benchmarks-nersc.sh
