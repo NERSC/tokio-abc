@@ -60,14 +60,19 @@ vpic_exe_path="${REPO_BASE_DIR}"
 ###  System-specific input and setup parameters
 ################################################################################
 
-if [ "$NERSC_HOST" == "edison" -o "$NERSC_HOST" == "edison-mini" -o "$NERSC_HOST" == "edison-micro" ]; then
-    PARAMS_FILE="${REPO_BASE_DIR}/inputs/edison.params"
-elif [ "$NERSC_HOST" == "cori" -o "$NERSC_HOST" == "cori-mini" -o "$NERSC_HOST" == "cori-micro" ]; then
-    PARAMS_FILE="${REPO_BASE_DIR}/inputs/cori.params"
-elif [ -z "$NERSC_HOST" ]; then
-    printerr "Undefined NERSC_HOST" >&2; exit 1
+if [ -z "$TOKIO_PARAMS_FILE" ]; then
+    if [ -z "$NERSC_HOST" ]; then
+        printerr "Undefined TOKIO_PARAMS_FILE and NERSC_HOST" >&2; exit 1
+    else
+        TOKIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/${NERSC_HOST}.params"
+    fi
+fi
+
+if [ ! -f "$TOKIO_PARAMS_FILE" ]; then
+    printerr "TOKIO_PARAMS_FILE=[$TOKIO_PARAMS_FILE] not found"
+    exit 1
 else
-    printerr "Unknown NERSC_HOST [$NERSC_HOST]" >&2; exit 1
+    printlog "Using TOKIO_PARAMS_FILE=[$TOKIO_PARAMS_FILE]"
 fi
 
 ################################################################################
@@ -236,11 +241,6 @@ function clean_vpicio() {
 ### Begin running benchmarks
 ################################################################################
 
-if [ ! -f "$PARAMS_FILE" ]; then
-    printerr "PARAMS_FILE=[$PARAMS_FILE] not found"
-    exit 1
-fi
-
 ### Load contents of parameters file into an array
 PARAM_LINES=()
 while read -r parameters; do
@@ -248,7 +248,7 @@ while read -r parameters; do
         continue
     fi
     PARAM_LINES+=("$parameters")
-done <<< "$(envsubst < "$PARAMS_FILE")"
+done <<< "$(envsubst < "$TOKIO_PARAMS_FILE")"
 
 ### Dispatch benchmarks for each line in the parameters file
 global_ret_val=0
