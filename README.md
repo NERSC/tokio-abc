@@ -6,18 +6,18 @@ TODO
 
 ## Test Matrix (NERSC)
 
-Benchmark | Nodes | Procs | GiB/proc  | I/O Motif
-----------|-------|-------|-----------|------------------------------------
-IOR       |  96   | 1536  | 1.0       | POSIX; file per process; write
-IOR       |  96   | 1536  | 1.0       | POSIX; file per process; read
-IOR       |  96   | 1536  | 1.0       | MPI-IO; shared file; write
-IOR       |  96   | 1536  | 1.0       | MPI-IO; shared file; read
-HACC-IO   |  96   | 1536  | 1.0       | GLEAN; file per process; write
-HACC-IO   |  96   | 1536  | 1.0       | GLEAN; file per process; read
-VPIC-IO   |  96   | 1536  | 1.0       | pHDF5; shared file; write
-BDCATS-IO |  96   | 1536  | 1.0       | pHDF5; shared file; read
+Benchmark | Edison Nodes/Procs | Cori/KNL Nodes/Procs | I/O Motif
+----------|--------------------|----------------------|-------------------------------
+IOR       |         128 / 2048 |           256 / 4096 | POSIX; file per process; write
+IOR       |         128 / 2048 |           256 / 4096 | POSIX; file per process; read
+IOR       |         128 / 2048 |           256 / 4096 | MPI-IO; shared file; write
+IOR       |         128 / 2048 |           256 / 4096 | MPI-IO; shared file; read
+HACC-IO   |         128 / 2048 |           256 / 4096 | GLEAN; file per process; write
+HACC-IO   |         128 / 2048 |           256 / 4096 | GLEAN; file per process; read
+VPIC-IO   |         128 / 2048 |           256 / 4096 | pHDF5; shared file; write
+BDCATS-IO |         128 / 2048 |           256 / 4096 | pHDF5; shared file; read
 
-The following table contains some estimates of how long each benchmark takes.
+The following tables contain some estimates of how long each benchmark takes.
 **It is determined by whatever timing information is reported by the
 application**.  Specifically:
 
@@ -26,16 +26,31 @@ application**.  Specifically:
 - VPIC-IO: the `seconds elapsed in opening, writing, closing file` value
 - BDCATS-IO: the `Data read time` value
 
-Benchmark        | Total GiB | escratch1 | escratch2 | escratch3 | cscratch |  dw_lg/s |  dw_lg/p |
------------------|-----------|-----------|-----------|-----------|----------|----------|----------|
-IOR/write/shared |  384.00   |  68.3 sec |  33.3 sec |  33.3 sec | 22.1 sec |  8.0 sec |      N/A |
-IOR/read/shared  |  384.00   |  36.8 sec |  46.6 sec |  36.1 sec |    - sec |  7.8 sec |      N/A |
-IOR/write/fpp    | 1536.00   |  54.0 sec |  48.3 sec |  38.6 sec |  7.5 sec |      N/A |  2.0 sec |
-IOR/read/fpp     | 1536.00   |  40.3 sec |  40.5 sec |  27.2 sec | 12.1 sec |      N/A |  1.7 sec |
-HACC-IO/write    | 1572.00   |  66.1 sec |  66.1 sec |  42.3 sec |  7.6 sec |  9.6 sec |  8.6 sec |
-HACC-IO/read     | 1572.00   |  44.4 sec |  44.3 sec |  28.2 sec | 13.4 sec |  8.1 sec |  8.2 sec |
-VPIC-IO          | 1536.00   |  95.3 sec | 112.1 sec |  95.4 sec |  334 sec | 13.3 sec |      N/A |
-BDCATS-IO        | 1152.02   |  64.1 sec |  69.9 sec |  45.4 sec |   28 sec |   24 sec |      N/A |
+**Edison:**
+
+Benchmark        | Total GiB | escratch1 | escratch2 | escratch3
+-----------------|-----------|-----------|-----------|----------
+IOR/write/shared |  512.00   | 142.8 sec |       sec |       sec
+IOR/read/shared  |  512.00   | 107.4 sec |       sec |       sec
+IOR/write/fpp    | 2048.00   |  76.8 sec |       sec |       sec
+IOR/read/fpp     | 2048.00   | 119.2 sec |       sec |       sec
+HACC-IO/write    | 2096.00   |  86.4 sec |       sec |       sec
+HACC-IO/read     | 2096.00   |  60.7 sec |       sec |       sec
+VPIC-IO          | 2048.00   | 127.7 sec |       sec |       sec
+BDCATS-IO        | 1536.02   | 132.8 sec |       sec |       sec 
+
+**Cori:**
+
+Benchmark        | Total GiB |  cscratch |  dw_lg/s |  dw_lg/p |
+-----------------|-----------|-----------|----------|----------|
+IOR/write/shared | 1024.00   |  75.1 sec | 20.6 sec |      N/A |
+IOR/read/shared  | 1024.00   |     - sec | 23.3 sec |      N/A |
+IOR/write/fpp    | 4096.00   |  20.2 sec |      N/A |  3.2 sec |
+IOR/read/fpp     | 4096.00   |  25.2 sec |      N/A |  3.1 sec |
+HACC-IO/write    | 4192.00   |  21.5 sec | 12.3 sec | 11.6 sec |
+HACC-IO/read     | 4192.00   |  20.7 sec | 18.5 sec | 18.4 sec |
+VPIC-IO          | 4096.00   | 335.9 sec | 19.0 sec |      N/A |
+BDCATS-IO        | 3072.02   |  62.0 sec | 30.0 sec |      N/A |
 
 VPIC must be run with `MPICH_MPIIO_HINTS='*:romio_cb_write=disable'` to keep its
 walltime low.  Conversely, IOR must be run with
