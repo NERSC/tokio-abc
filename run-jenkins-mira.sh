@@ -13,7 +13,7 @@ PROJ_WD=/projects/radix-io/automated
 day=$(date +"%Y%m%d")
 
 # use Darshan 3.1.3 install
-DARSHAN3_ROOT=/projects/radix-io/soft/darshan/darshan-3.1.3-pre/install
+DARSHAN3_ROOT=/projects/radix-io/soft/darshan/darshan-3.1.3/install
 export MPICC_PROFILE=${DARSHAN3_ROOT}/share/mpi-profile/darshan-bg-cc
 export MPICXX_PROFILE=${DARSHAN3_ROOT}/share/mpi-profile/darshan-bg-cxx
 
