@@ -54,7 +54,7 @@ function run_ior() {
     fi
 
     printlog "Submitting IOR: $IOR_API-$READ_OR_WRITE"
-    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --envs BGLOCKLESSMPIO_F_TYPE=0x47504653 --envs DARSHAN_TOKIO_LOG_PATH=${TOKIO_JOB_DIR}/runs/darshan-logs --verbose=INFO : \
+    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --timeout 300 --envs BGLOCKLESSMPIO_F_TYPE=0x47504653 --envs DARSHAN_TOKIO_LOG_PATH=${TOKIO_JOB_DIR}/runs/darshan-logs --verbose=INFO : \
         $TOKIO_BIN_DIR/ior \
             -H \
             $IOR_CLI_ARGS \
@@ -91,7 +91,7 @@ function run_haccio() {
     NPROCS="$3"
 
     printlog "Submitting HACC-IO: ${HACC_EXE}"
-    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --envs BGLOCKLESSMPIO_F_TYPE=0x47504653 --envs DARSHAN_TOKIO_LOG_PATH=${TOKIO_JOB_DIR}/runs/darshan-logs --verbose=INFO : \
+    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --timeout 300 --envs BGLOCKLESSMPIO_F_TYPE=0x47504653 --envs DARSHAN_TOKIO_LOG_PATH=${TOKIO_JOB_DIR}/runs/darshan-logs --verbose=INFO : \
         ${TOKIO_BIN_DIR}/${HACC_EXE} \
             $HACC_NUM_PARTICLES \
             $OUT_FILE
@@ -126,7 +126,7 @@ function run_vpicio() {
     fi
 
     printlog "Submitting VPIC-IO: $VPIC_EXE"
-    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --envs BGLOCKLESSMPIO_F_TYPE=0x47504653 --envs DARSHAN_TOKIO_LOG_PATH=${TOKIO_JOB_DIR}/runs/darshan-logs --verbose=INFO : \
+    runjob -n $NPROCS -p 16 --block $COBALT_PARTNAME --timeout 300 --envs BGLOCKLESSMPIO_F_TYPE=0x47504653 --envs DARSHAN_TOKIO_LOG_PATH=${TOKIO_JOB_DIR}/runs/darshan-logs --verbose=INFO : \
         ${TOKIO_BIN_DIR}/${VPIC_EXE} \
             $exe_args
     ec=$?
