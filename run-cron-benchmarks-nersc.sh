@@ -4,7 +4,11 @@
 ### something different, export REPO_BASE_DIR before invoking this script.
 
 ### implicit that this script is run from a subdirectory of the repo base
-export REPO_BASE_DIR=${REPO_BASE_DIR:-$(readlink -f $PWD/..)}
+REPO_BASE_DIR="${REPO_BASE_DIR:-$(readlink -f $PWD/..)}"
+TOKIO_BIN_DIR="${TOKIO_BIN_DIR:-${REPO_BASE_DIR}/bin}"
+TOKIO_INPUTS_DIR="${REPO_BASE_DIR}/inputs"
+TOKIO_JOB_DIR=${TOKIO_JOB_DIR:-$PWD}
+TOKIO_PARAMS_FILE="${TOKIO_PARAMS_FILE:-$NERSC_HOST.params}"
 
 ### if not running in Slurm, just do a dry run
 if [ -z "$SLURM_JOBID" ]; then
@@ -13,8 +17,7 @@ if [ -z "$SLURM_JOBID" ]; then
     rmdir_exe="echo rmdir"
     mkdir_exe="echo mkdir"
     lfs_exe="echo lfs"
-    export TOKIO_JOBID="0000000"
-    export TOKIO_JOBDIR="$PWD"
+    export TOKIO_JOBID="0000000" # export so that `envsubst` sees it
     export DW_JOB_STRIPED='$DW_JOB_STRIPED' # export so that `envsubst` sees it
     export DW_JOB_PRIVATE='$DW_JOB_PRIVATE' # export so that `envsubst` sees it
     function printlog() {
@@ -29,8 +32,7 @@ else
     rmdir_exe="rmdir"
     mkdir_exe="mkdir"
     lfs_exe="lfs"
-    export TOKIO_JOBID="$SLURM_JOBID"
-    export TOKIO_JOBDIR="$SLURM_SUBMIT_DIR"
+    export TOKIO_JOBID="$SLURM_JOBID" # export so that `envsubst` sees it
     function printlog() {
         echo "[$(date)] $@"
     }
@@ -39,35 +41,30 @@ else
     }
 fi
 
-### location to dump the stderr/stdout of each benchmark
-export TOKIO_LOGPATH=${TOKIO_LOGPATH:-$TOKIO_JOBDIR}
-
 ### the following assumes Darshan was configured with
 ###    --with-log-path-by-env=DARSHAN_LOGPATH
-export DARSHAN_LOGPATH="$TOKIO_LOGPATH"
+export DARSHAN_LOGPATH="$TOKIO_JOB_DIR"
 printlog "Darshan logs will go to $DARSHAN_LOGPATH"
 
 ### Enable extra verbosity in MPI-IO to get insight into collective buffering
 export MPICH_MPIIO_HINTS_DISPLAY=1
 export MPICH_MPIIO_STATS=1
 
-### these paths should not require site-specific modification
-ior_exe="${REPO_BASE_DIR}/ior/install/bin/ior"
-hacc_exe_path="${REPO_BASE_DIR}/hacc-io/install"
-vpic_exe_path="${REPO_BASE_DIR}"
-
 ################################################################################
-###  System-specific input and setup parameters
+###  Basic parameter validation
 ################################################################################
 
-if [ -z "$TOKIO_PARAMS_FILE" ]; then
-    if [ -z "$NERSC_HOST" ]; then
-        printerr "Undefined TOKIO_PARAMS_FILE and NERSC_HOST" >&2; exit 1
-    else
-        TOKIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/${NERSC_HOST}.params"
-    fi
+if [ ! -d "$TOKIO_BIN_DIR" ]; then
+    printerr "TOKIO_BIN_DIR=[$TOKIO_BIN_DIR] doesn't exist; likely to fail"
 fi
 
+if [ -z "$TOKIO_PARAMS_FILE" ]; then
+    printerr "Undefined TOKIO_PARAMS_FILE" >&2; exit 1
+    exit 1
+fi
+if [ ! -f "$TOKIO_PARAMS_FILE" ]; then
+    TOKIO_PARAMS_FILE="$TOKIO_INPUTS_DIR/$TOKIO_PARAMS_FILE"
+fi
 if [ ! -f "$TOKIO_PARAMS_FILE" ]; then
     printerr "TOKIO_PARAMS_FILE=[$TOKIO_PARAMS_FILE] not found"
     exit 1
@@ -83,7 +80,7 @@ function setup_outdir() {
     if [ -z "$1" ]; then
         return 1
     else
-        out_dir=$1
+        OUT_DIR=$1
     fi
     if [ -z "$2" ]; then
         stripe_ct=1
@@ -95,15 +92,22 @@ function setup_outdir() {
         module load lustre-cray_ari_s
     fi
 
-    if [ -d "$out_dir" ]; then
-        printerr "$out_dir already exists; striping may be affected"
+    if [ -d "$OUT_DIR" ]; then
+        printerr "$OUT_DIR already exists; striping may be affected"
     else
-        mkdir -p $out_dir || return 1
+        ### if this is a private DataWarp namespace, we must create the
+        ### directory in all namespaces
+        if [[ ! -z "$DW_JOB_PRIVATE" && "$OUT_DIR" =~ $DW_JOB_PRIVATE ]]; then
+            $srun_exe --ntasks-per-node=1 bash -c "mkdir -p ${OUT_DIR}"
+        else
+            $mkdir_exe -p $OUT_DIR || return 1
+        fi
+
     fi
 
     ### set striping if necessary
-    if lfs getstripe "$out_dir" >/dev/null 2>&1; then
-        $lfs_exe setstripe -c $stripe_ct "$out_dir"
+    if lfs getstripe "$OUT_DIR" >/dev/null 2>&1; then
+        $lfs_exe setstripe -c $stripe_ct "$OUT_DIR"
     fi
 }
 
@@ -143,11 +147,11 @@ function run_ior() {
     MPICH_MPIIO_HINTS="*:romio_cb_read=enable:romio_cb_write=enable" \
         $srun_exe -n ${NPROCS} \
          -N ${NNODES} \
-         "$ior_exe" -H \
+         "${TOKIO_BIN_DIR}/ior" -H \
                     $IOR_CLI_ARGS \
                     -o "${OUT_FILE}" \
                     -s $SEGMENT_CT \
-                    -f "${REPO_BASE_DIR}/inputs/${IOR_API}1m2.in" | tee "${TOKIO_LOGPATH}/ior_${READ_OR_WRITE}-${FS_NAME}-${IOR_API}.${TOKIO_JOBID}.out"
+                    -f "${TOKIO_INPUTS_DIR}/${IOR_API}1m2.in" | tee "${TOKIO_JOB_DIR}/ior_${READ_OR_WRITE}-${FS_NAME}-${IOR_API}.${TOKIO_JOBID}.out"
     ret_val=$?
     printlog "Completed IOR: ${FS_NAME}-${IOR_API}"
     return $ret_val
@@ -164,7 +168,7 @@ function clean_ior() {
             $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*; rmdir $(dirname $OUT_FILE)"
         else
             $rm_exe -rf ${OUT_FILE}*
-            $rmdir_exe $(dirname $OUT_FILE)
+            $rmdir_exe --ignore-fail-on-non-empty $(dirname $OUT_FILE)
         fi
     fi
 }
@@ -179,7 +183,7 @@ function run_haccio() {
 
     setup_outdir "$(dirname "$OUT_FILE")" 1
     printlog "Submitting HACC-IO: ${FS_NAME}-${HACC_EXE}"
-    $srun_exe -n ${NPROCS} -N ${NNODES} "${hacc_exe_path}/${HACC_EXE}" 28256364 "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
+    $srun_exe -n ${NPROCS} -N ${NNODES} "${TOKIO_BIN_DIR}/${HACC_EXE}" 28256364 "${OUT_FILE}" | tee "${TOKIO_JOB_DIR}/haccio-${FS_NAME}-${HACC_EXE}.${TOKIO_JOBID}.out"
     ret_val=$?
     printlog "Completed HACC-IO: ${FS_NAME}-${HACC_EXE}"
     return $ret_val
@@ -196,7 +200,7 @@ function clean_haccio() {
             $srun_exe --ntasks-per-node=1 bash -c "rm -f ${OUT_FILE}*; rmdir $(dirname $OUT_FILE)"
         else
             $rm_exe -rf ${OUT_FILE}*
-            $rmdir_exe $(dirname $OUT_FILE)
+            $rmdir_exe --ignore-fail-on-non-empty $(dirname $OUT_FILE)
         fi
     fi
 }
@@ -221,7 +225,7 @@ function run_vpicio() {
     fi
     printlog "Submitting VPIC-IO: ${FS_NAME}-$(basename ${VPIC_EXE})"
     MPICH_MPIIO_HINTS="*:romio_cb_read=disable:romio_cb_write=disable" \
-        $srun_exe -n ${NPROCS} -N ${NNODES} "${vpic_exe_path}/${VPIC_EXE}" $extra_args "${OUT_FILE}" | tee "${TOKIO_LOGPATH}/vpicio-${FS_NAME}-$(basename ${VPIC_EXE}).${TOKIO_JOBID}.out"
+        $srun_exe -n ${NPROCS} -N ${NNODES} "${TOKIO_BIN_DIR}/${VPIC_EXE}" $extra_args "${OUT_FILE}" | tee "${TOKIO_JOB_DIR}/vpicio-${FS_NAME}-$(basename ${VPIC_EXE}).${TOKIO_JOBID}.out"
     ret_val=$?
     printlog "Completed VPIC-IO: ${FS_NAME}-$(basename ${VPIC_EXE})"
     return $ret_val
@@ -233,7 +237,7 @@ function clean_vpicio() {
     if [ ! -z "$OUT_FILE" ]; then
         printlog "Deleting ${OUT_FILE}*"
         $rm_exe -rf ${OUT_FILE}*
-        $rmdir_exe $(dirname $OUT_FILE)
+        $rmdir_exe --ignore-fail-on-non-empty $(dirname $OUT_FILE)
     fi
 }
 

@@ -10,15 +10,18 @@
 #SBATCH --mail-type=END
 
 i=0
-while [ -d runs.$i ]; do
+today=$(date "+%Y-%m-%d")
+output_base_dir="${SLURM_SUBMIT_DIR}/runs.${NERSC_HOST}.$today"
+while [ -d "${output_base_dir}.$i" ]; do
     let "i++"
 done
-echo "[$(date)] Outputting to runs.$i"
+export TOKIO_JOB_DIR="${output_base_dir}.$i"
+echo "[$(date)] Outputting to $TOKIO_JOB_DIR"
 
 export REPO_BASE_DIR="${SLURM_SUBMIT_DIR}"
-export TOKIO_LOGPATH="${SLURM_SUBMIT_DIR}/runs.$i"
-export DARSHAN_LOGPATH="${TOKIO_LOGPATH}"
+export TOKIO_BIN_DIR="${REPO_BASE_DIR}/bin.edison"
+export DARSHAN_LOGPATH="${TOKIO_JOB_DIR}"
 export TOKIO_PARAMS_FILE="${REPO_BASE_DIR}/inputs/edison-scratch1.params"
 
-mkdir -p "$TOKIO_LOGPATH" && cd "$TOKIO_LOGPATH"
+mkdir -p "$TOKIO_JOB_DIR" && cd "$TOKIO_JOB_DIR"
 ../run-cron-benchmarks-nersc.sh
