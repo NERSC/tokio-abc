@@ -30,14 +30,14 @@ application**.  Specifically:
 
 Benchmark        | Total GiB |  scratch1 |  scratch2 |  scratch3
 -----------------|-----------|-----------|-----------|----------
-IOR/write/shared |  512.00   | 142.8 sec |       sec |       sec
-IOR/read/shared  |  512.00   | 107.4 sec |       sec |       sec
-IOR/write/fpp    | 2048.00   |  76.8 sec |       sec |       sec
-IOR/read/fpp     | 2048.00   | 119.2 sec |       sec |       sec
-HACC-IO/write    | 2096.00   |  86.4 sec |       sec |       sec
-HACC-IO/read     | 2096.00   |  60.7 sec |       sec |       sec
-VPIC-IO          | 2048.00   | 127.7 sec |       sec |       sec
-BDCATS-IO        | 1536.02   | 132.8 sec |       sec |       sec 
+IOR/write/shared |  512.00   |  90.2 sec |  41.8 sec |  30.5 sec
+IOR/read/shared  |  512.00   |  49.5 sec |  49.5 sec |  24.3 sec
+IOR/write/fpp    | 2048.00   |  72.7 sec |  79.3 sec |  41.9 sec
+IOR/read/fpp     | 2048.00   |  54.6 sec |  53.6 sec |  34.6 sec
+HACC-IO/write    | 2096.00   |  72.5 sec |  79.6 sec |  43.2 sec
+HACC-IO/read     | 2096.00   |  59.9 sec |  57.4 sec |  35.7 sec
+VPIC-IO          | 1024.00   |  71.4 sec | 104.7 sec |  63.8 sec
+BDCATS-IO        |  768.02   |  48.2 sec |  41.9 sec |  29.4 sec 
 
 **Cori:**
 

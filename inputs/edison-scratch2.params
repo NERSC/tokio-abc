@@ -17,7 +17,7 @@
 ################################################################################
 ### VPIC-IO / BD-CATS-IO
 ################################################################################
-# benchmark fs_name  vpic_exe    output_file                                                            nnode nproc
-# --------- -------- ----------- ---------------------------------------------------------------------- ----- -----
-  vpicio    scratch2 vpicio_uni  /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5   128  2048
-  vpicio    scratch2 dbscan_read /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5   128  2048
+# benchmark fs_name  vpic_exe    output_file                                                            nnode nproc npart
+# --------- -------- ----------- ---------------------------------------------------------------------- ----- ----- -----
+  vpicio    scratch2 vpicio_uni  /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5   128  2048    16
+  vpicio    scratch2 dbscan_read /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5   128  2048    16
