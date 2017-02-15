@@ -1,10 +1,15 @@
+### Run Results
+slurm-*.out
+runs.*
+
 ### Artifacts
 ior/install
 hacc-io/install
 h5part/install
 vpic-io/install
 bdcats-io/install
-bin/
+bin
+bin.*
 
 ### Build directories and contents
 ior/build
