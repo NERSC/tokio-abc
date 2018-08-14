@@ -1,0 +1,39 @@
+################################################################################
+### IOR
+################################################################################
+# benchmark fs_name  ior_api r/w   output_file                                                           segct nnode nproc
+# --------- -------- ------- ----- --------------------------------------------------------------------- ----- ----- -----
+  ior       scratch1 mpiio   write /scratch1/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/ior/ior-mpiio.out    64     4    64
+  ior       scratch2 mpiio   write /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/ior/ior-mpiio.out    64     4    64
+  ior       scratch3 mpiio   write /scratch3/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/ior/ior-mpiio.out    64     4    64
+  ior       scratch1 posix   write /scratch1/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out   256     4    64
+  ior       scratch2 posix   write /scratch2/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out   256     4    64
+  ior       scratch3 posix   write /scratch3/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out   256     4    64
+  ior       scratch1 mpiio   read  /scratch1/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/ior/ior-mpiio.out    64     4    64
+  ior       scratch2 mpiio   read  /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/ior/ior-mpiio.out    64     4    64
+  ior       scratch3 mpiio   read  /scratch3/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/ior/ior-mpiio.out    64     4    64
+  ior       scratch1 posix   read  /scratch1/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out   256     4    64
+  ior       scratch2 posix   read  /scratch2/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out   256     4    64
+  ior       scratch3 posix   read  /scratch3/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out   256     4    64
+################################################################################
+### HACC-IO
+################################################################################
+# benchmark fs_name  hacc_exe      output_file                                                           nnode nproc
+# --------- -------- ------------  --------------------------------------------------------------------- ----- -----
+  haccio    scratch1 hacc_io_write /scratch1/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out     4    64
+  haccio    scratch2 hacc_io_write /scratch2/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out     4    64
+  haccio    scratch3 hacc_io_write /scratch3/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out     4    64
+  haccio    scratch1 hacc_io_read  /scratch1/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out     4    64
+  haccio    scratch2 hacc_io_read  /scratch2/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out     4    64
+  haccio    scratch3 hacc_io_read  /scratch3/scratchdirs/$USER/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out     4    64
+################################################################################
+### VPIC-IO / BD-CATS-IO
+################################################################################
+# benchmark fs_name  vpic_exe    output_file                                                            nnode nproc
+# --------- -------- ----------- ---------------------------------------------------------------------- ----- -----
+  vpicio    scratch1 vpicio_uni  /scratch1/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5     4    64
+  vpicio    scratch2 vpicio_uni  /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5     4    64
+  vpicio    scratch3 vpicio_uni  /scratch3/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5     4    64
+  vpicio    scratch1 dbscan_read /scratch1/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5     4    64
+  vpicio    scratch2 dbscan_read /scratch2/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5     4    64
+  vpicio    scratch3 dbscan_read /scratch3/scratchdirs/$USER/tokioabc-s.$TOKIO_JOBID/vpicio/vpicio.hdf5     4    64

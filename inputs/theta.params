@@ -1,0 +1,23 @@
+################################################################################
+### IOR
+################################################################################
+# benchmark fs_name   ior_api r/w   output_file                          segct nnode nproc
+# --------- --------- ------- ----- ------------------------------------ ----- ----- -----
+  ior       theta-fs0 mpiio   write $TOKIO_SCRATCH_DIR/ior/ior-mpiio.out    64   128  2048
+  ior       theta-fs0 posix   write $TOKIO_SCRATCH_DIR/ior/ior-posix.out   512   128  2048
+  ior       theta-fs0 mpiio   read  $TOKIO_SCRATCH_DIR/ior/ior-mpiio.out    64   128  2048
+  ior       theta-fs0 posix   read  $TOKIO_SCRATCH_DIR/ior/ior-posix.out   512   128  2048
+################################################################################
+### HACC-IO
+################################################################################
+# benchmark fs_name   hacc_exe      output_file                          nnode nproc npart
+# --------- --------- ------------  ------------------------------------ ----- ----- --------
+  haccio    theta-fs0 hacc_io_write $TOKIO_SCRATCH_DIR/haccio/haccio.out   128  2048 19867760
+  haccio    theta-fs0 hacc_io_read  $TOKIO_SCRATCH_DIR/haccio/haccio.out   128  2048 19867760
+################################################################################
+### VPIC-IO / BD-CATS-IO
+################################################################################
+# benchmark fs_name   vpic_exe    output_file                           nnode nproc npart
+# --------- --------- ----------- ------------------------------------- ----- ----- -----
+  vpicio    theta-fs0 vpicio_uni  $TOKIO_SCRATCH_DIR/vpicio/vpicio.hdf5   128  2048    32
+  vpicio    theta-fs0 dbscan_read $TOKIO_SCRATCH_DIR/vpicio/vpicio.hdf5   128  2048    32

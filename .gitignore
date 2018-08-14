@@ -1,0 +1,61 @@
+### Run Results
+slurm-*.out
+runs.*
+_runs.*
+*.log
+results/edison/*.json
+
+### Tools
+*.pyc
+.ipynb_checkpoints
+
+### Begin cleanup targets ######################################################
+
+### Artifacts
+ior/install
+hacc-io/install
+h5part/install
+vpic-io/install
+bdcats-io/install
+bin
+bin.*
+
+### Build directories and contents
+ior/build
+h5part/build
+vpic-io/Makefile
+bdcats-io/Makefile
+*.o
+
+### IOR autoconf cruft
+ior/Makefile.in
+ior/aclocal.m4
+ior/config/config.guess
+ior/config/config.sub
+ior/config/depcomp
+ior/config/install-sh
+ior/config/missing
+ior/configure
+ior/contrib/Makefile.in
+ior/doc/Makefile.in
+ior/src/Makefile.in
+ior/src/config.h.in
+
+### H5Part autoconf cruft
+h5part/Makefile
+h5part/Makefile.in
+h5part/aclocal.m4
+h5part/compile
+h5part/config.guess
+h5part/config.h.in
+h5part/config.sub
+h5part/configure
+h5part/depcomp
+h5part/doc/Makefile.in
+h5part/install-sh
+h5part/missing
+h5part/src/Makefile.in
+h5part/test-driver
+h5part/test/Makefile.in
+h5part/tools/Makefile.in
+h5part/autom4te.cache/

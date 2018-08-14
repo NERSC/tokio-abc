@@ -1,0 +1,14 @@
+################################################################################
+### IOR
+################################################################################
+# benchmark fs_name  ior_api r/w   output_file                                                          segct nnode nproc
+# --------- -------- ------- ----- -------------------------------------------------------------------- ----- ----- -----
+  ior       bbprivat posix   write $DW_JOB_PRIVATE/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out             1024   256  4096
+  ior       bbprivat posix   read  $DW_JOB_PRIVATE/tokioabc-p.$TOKIO_JOBID/ior/ior-posix.out             1024   256  4096
+################################################################################
+### HACC-IO
+################################################################################
+# benchmark fs_name  hacc_exe      output_file                                                          nnode nproc    npart
+# --------- -------- ------------  -------------------------------------------------------------------- ----- ----- --------
+  haccio    bbprivat hacc_io_write $DW_JOB_PRIVATE/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out              256  4096 141281820
+  haccio    bbprivat hacc_io_read  $DW_JOB_PRIVATE/tokioabc-p.$TOKIO_JOBID/haccio/haccio.out              256  4096 141281820

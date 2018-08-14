@@ -1,0 +1,33 @@
+IOR
+================================================================================
+ * source cloned directly from: https://github.com/hpc/ior
+ * used commit 4dc989d06280292bfbf3ee8f9d9db57ffde9f404
+ * added a small manual bug fix for Mira by commenting out line 232 in ior.c
+    * getenv("USER") returns NULL, causing segfault
+    * this line is only used for HDFS backend
+
+HACC-IO
+================================================================================
+ * source cloned from https://github.com/glennklockwood/hacc-io
+ * used commit: 8f43d1f14610e0b0f5a316054071157891472f0e
+ * source in the GitHub repository is itself derived from the HACC IO benchmark
+   available at https://asc.llnl.gov/CORAL-benchmarks/#hacc (HACC_IO.tar.gz,
+   md5:e6ecb4fa3dcb944b4b5c734053743782)
+
+VPIC-IO
+================================================================================
+ * source cloned from https://github.com/glennklockwood/vpic-io
+ * used commit: 67d3a60de195d6acdf42faa11d79445ebc7a7ad9
+ * source in the GitHub repository is itself derived from the VPIC-IO benchmark
+   included in the ExaHDF Parallel I/O Kernels (PIOK) suite, available at
+   https://sdm.lbl.gov/exahdf5/software.html
+
+BD-CATS-IO
+================================================================================
+ * source cloned from https://github.com/glennklockwood/bdcats-io
+ * last commit: 2f41e41ddf156344b44f59394d8eaabde1101875
+ * source in the GitHub repository was originally provided by Suren Byna on
+   Dec 19, 2016 (bdcats_io.zip, md5:09ad2de4f675eccb02f3d8a425fcc1cf) and
+   Dec 22, 2016 (bdats_data_struct.h, md5: f98e85299cebbc0014c100b307de0919)
+ * commented out some debug output in bdats_h5reader.cpp (specifically on lines
+   288, 296, 361, 384, 434, 520, and 528)

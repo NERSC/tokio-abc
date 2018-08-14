@@ -1,0 +1,18 @@
+IOR START
+# common options
+    fsync=1              # -e    fsync -- perform fsync upon POSIX write close
+    intraTestBarriers=1  # -g    intraTestBarriers -- use barriers between open-write/read-close
+    repetitions=1        # -i N  repetitions -- number of repetitions of test
+    verbose=1            # -v    verbose -- output information (repeating flag increases level)
+
+# MPIIO shared file tests
+# 1m2 test
+    api=MPIIO            # -a S  api --  API for I/O [POSIX|MPIIO|HDF5|NCMPI]
+    filePerProc=0        # -F    filePerProc -- file-per-process
+    collective=1         # -c    collective -- collective I/O
+#    segmentCount=256     # -s N  segmentCount -- number of segments
+    blockSize=4194304    # -b N  blockSize -- contiguous bytes to write per task
+    transferSize=4194304 # -t N  transferSize -- size of transfer in bytes
+RUN
+
+IOR STOP
